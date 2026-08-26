@@ -75,7 +75,7 @@
             const q = new URLSearchParams(params).toString();
             return API.get('/posts' + (q ? `?${q}` : ''));
         },
-        post: (data) => API.post('/posts', data),
+        createPost: (data) => API.post('/posts', data),
         deletePost: (id) => API.del(`/posts/${id}`),
         toggleLike: (id) => API.post(`/posts/${id}/like`),
         toggleSave: (id) => API.post(`/posts/${id}/save`),

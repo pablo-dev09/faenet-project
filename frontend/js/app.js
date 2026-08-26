@@ -14,10 +14,13 @@
         msgTimer: null,
 
         async init() {
-            // Esconde o splash
+            // Esconde o splash de carregamento
             const splash = document.getElementById('app-loading');
             const appRoot = document.getElementById('app');
-            if (splash) splash.style.display = 'none';
+            if (splash) {
+                splash.classList.add('is-hidden');
+                setTimeout(() => { splash.style.display = 'none'; }, 220);
+            }
             if (appRoot) appRoot.hidden = false;
 
             // Tenta descobrir a sessao

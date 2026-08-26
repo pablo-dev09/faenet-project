@@ -156,7 +156,7 @@
                             throw new Error('Escreva algo, adicione uma imagem ou crie uma enquete.');
                         }
 
-                        const post = await FaeAPI.post({ content: text, images, poll });
+                        const post = await FaeAPI.createPost({ content: text, images, poll });
                         FaeUtils.success('Publicado!');
                         ta.value = '';
                         pendingImages = [];
@@ -532,7 +532,7 @@
                             post.reposted_by_me = r.reposted;
                             post.reposts_count = r.reposts_count;
                         } else {
-                            await FaeAPI.post({ content: '', repost_of: post.id });
+                            await FaeAPI.createPost({ content: '', repost_of: post.id });
                             const r = await FaeAPI.toggleRepost(post.id);
                             post.reposted_by_me = r.reposted;
                             post.reposts_count = r.reposts_count;

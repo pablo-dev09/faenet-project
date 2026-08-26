@@ -52,3 +52,22 @@ server.log
 server.err.log
 smoke_test.py
 test_flows.py
+test_login_browser.py
+check_login.py
+check_feed.py
+debug_login.py
+trace_login.py
+trace_login2.py
+trace_login3.py
+
+# Screenshots de teste
+browser_*.png
+login_check.png
+feed_check.png
+after_login_attempt.png
+after_manual_login.png
+
+# venv local
+.venv/
+venv/
+

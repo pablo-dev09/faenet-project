@@ -1,50 +1,51 @@
 /* =====================================================
    FaeNet - global.css
    Reset, tokens de design, tipografia e utilidades.
+   Paleta alinhada com o tema do app de referencia (shadcn).
    ===================================================== */
 
 :root {
-    /* Cores principais */
-    --bg: #0a0d18;
-    --bg-elev: #11162a;
-    --bg-elev-2: #161c33;
-    --bg-card: #131830;
-    --bg-input: #0e1426;
-    --bg-hover: #1a2140;
-    --line: #1f2747;
-    --line-soft: #1a2140;
+    /* Cores principais - paleta escura com tons de roxo */
+    --bg: hsl(250 22% 6%);
+    --bg-elev: hsl(248 18% 9%);
+    --bg-elev-2: hsl(248 14% 12%);
+    --bg-card: hsl(248 18% 9%);
+    --bg-input: hsl(248 12% 16%);
+    --bg-hover: hsl(248 14% 14%);
+    --line: hsl(248 12% 18%);
+    --line-soft: hsl(248 12% 14%);
 
     /* Texto */
-    --text: #e6ebff;
-    --text-soft: #b1b8d6;
-    --text-muted: #7d86a8;
-    --text-dim: #5a6385;
+    --text: hsl(210 20% 96%);
+    --text-soft: hsl(210 20% 88%);
+    --text-muted: hsl(240 8% 62%);
+    --text-dim: hsl(240 6% 48%);
 
     /* Acentos */
-    --primary: #7c5cff;
-    --primary-2: #00d4b4;
-    --primary-grad: linear-gradient(135deg, #7c5cff 0%, #00d4b4 100%);
-    --primary-soft: rgba(124, 92, 255, 0.18);
-    --accent-pink: #ff5c8a;
-    --accent-amber: #ffb84c;
-    --accent-cyan: #38e1ff;
+    --primary: hsl(263 85% 65%);
+    --primary-2: hsl(199 89% 55%);
+    --primary-grad: linear-gradient(135deg, hsl(263 85% 65%) 0%, hsl(199 89% 55%) 100%);
+    --primary-soft: hsla(263, 85%, 65%, 0.15);
+    --accent-pink: hsl(340 80% 60%);
+    --accent-amber: hsl(43 90% 60%);
+    --accent-cyan: hsl(199 89% 55%);
 
-    --success: #2bd97a;
-    --danger: #ff5c6e;
-    --warning: #ffb84c;
-    --info: #5cb9ff;
+    --success: hsl(160 60% 50%);
+    --danger: hsl(0 72% 56%);
+    --warning: hsl(43 90% 60%);
+    --info: hsl(199 89% 55%);
 
     /* Tamanhos / radii / sombras */
-    --r-sm: 8px;
-    --r-md: 12px;
-    --r-lg: 16px;
-    --r-xl: 22px;
-    --r-pill: 999px;
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    --r-xl: 20px;
+    --r-pill: 9999px;
 
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.45);
-    --shadow-glow: 0 0 0 1px rgba(124, 92, 255, 0.25), 0 8px 32px rgba(124, 92, 255, 0.18);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 0 1px hsla(263, 85%, 65%, 0.4), 0 8px 24px hsla(263, 85%, 65%, 0.2);
 
     /* Layout */
     --sidebar-w: 260px;
@@ -54,8 +55,8 @@
     --gap: 16px;
 
     /* Tipografia */
-    --font-display: 'Syne', system-ui, -apple-system, sans-serif;
-    --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --fs-xs: 12px;
     --fs-sm: 13px;
     --fs-md: 14px;
@@ -178,17 +179,31 @@ p { margin: 0 0 0.8em; }
     background: var(--bg);
     gap: 18px;
     z-index: 9999;
+    transition: opacity 0.2s ease;
+}
+
+.app-loading.is-hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .app-loading__logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-glow);
+    object-fit: cover;
+}
+
+.app-loading__title {
     font-family: var(--font-display);
-    font-size: 36px;
-    font-weight: 800;
+    font-size: 24px;
+    font-weight: 700;
     background: var(--primary-grad);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    letter-spacing: 1px;
+    letter-spacing: -0.01em;
 }
 
 .app-loading__spinner {
@@ -257,12 +272,20 @@ p { margin: 0 0 0.8em; }
     position: fixed;
     inset: 0;
     background: rgba(5, 8, 18, 0.75);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 8000;
     padding: 16px;
 }
+
+/* Quando o JS remove o atributo hidden, ativa o flex. */
+.modal-root:not([hidden]) { display: flex; }
+
+/* Garante que o atributo hidden sempre venca. */
+.modal-root[hidden] { display: none !important; }
+.app-loading[hidden] { display: none !important; }
+.toast-root[hidden] { display: none !important; }
 
 .modal {
     background: var(--bg-elev);
