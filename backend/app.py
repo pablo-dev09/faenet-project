@@ -7,11 +7,13 @@ comando CLI ``flask seed-demo`` para popular dados de demonstracao.
 """
 
 import os
+import traceback
 from datetime import datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, jsonify, request
 from flask_login import current_user
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from .config import get_config
 from .extensions import db, login_manager
@@ -75,6 +77,24 @@ def _register_error_handlers(app: Flask) -> None:
     @app.errorhandler(413)
     def too_large(e):
         return jsonify({"ok": False, "error": {"message": "Arquivo muito grande."}}), 413
+
+    @app.errorhandler(OperationalError)
+    def db_unavailable(e):
+        """Mensagem amigavel quando o banco nao esta acessivel.
+
+        Causas comuns:
+          - Banco SQLite nao criado (rode ``flask --app backend.app init-db``)
+          - ``DATABASE_URL`` apontando para URL invalida
+          - PostgreSQL em producao sem tabelas
+        """
+        app.logger.error("Falha ao acessar o banco: %s", e)
+        return jsonify({
+            "ok": False,
+            "error": {
+                "message": "Banco de dados indisponivel. Rode 'flask --app backend.app init-db' e 'flask --app backend.app seed-demo'.",
+                "code": "db_unavailable",
+            }
+        }), 503
 
     @app.errorhandler(500)
     def server_error(e):
