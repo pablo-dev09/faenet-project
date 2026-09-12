@@ -58,7 +58,9 @@ FaeNet e uma aplicacao web completa inspirada em redes sociais modernas (feed, s
 - Explorar: busca com debounce + grade de pessoas + publicacoes recentes
 - Notificacoes (curtidas, comentarios, seguidores, mensagens)
 - Indicador de usuarios online (heartbeat a cada 30s)
-- Hub do Curso: estagios, provas e forum de duvidas separados por curso
+- FaeMatch: conexoes profissionais por habilidades, interesses e projetos
+- FaeMap: mapa 3D do campus com presenca online voluntaria e localizacao aproximada
+- FaeHub+: apresentacao integrada do novo portal academico da ETESC
 - Interface administrativa (usuario com `is_admin`) pode apagar qualquer item
 - Toasts, modais, loading states, empty states, confirmacoes
 
@@ -117,7 +119,8 @@ faenet/
 │   │   ├── global.css
 │   │   ├── layout.css
 │   │   ├── components.css
-│   │   └── responsive.css
+│   │   ├── responsive.css
+│   │   └── experience.css      # Identidade visual e FaeMap
 │   └── js/
 │       ├── app.js              # SPA principal
 │       ├── api.js              # Wrapper de fetch
@@ -125,6 +128,8 @@ faenet/
 │       ├── feed.js
 │       ├── profile.js
 │       ├── messages.js
+│       ├── faematch.js          # Conexoes e projetos colaborativos
+│       ├── faemap.js            # Mapa 3D e presenca no campus
 │       ├── hub.js
 │       ├── notifications.js
 │       ├── explore.js
@@ -406,7 +411,9 @@ Base: `/api`. Toda resposta segue `{ "ok": true, "data": ... }` ou `{ "ok": fals
 | POST   | `/api/notifications/read`             | Marcar todas como lidas    |
 | POST   | `/api/notifications/<id>/read`        | Marcar uma como lida       |
 
-### Hub do Curso
+### API legada do Hub do Curso
+
+> A interface `/hub` agora apresenta o FaeHub+. Estes endpoints foram mantidos para compatibilidade com os dados existentes.
 
 | Metodo | Endpoint                                          | Descricao                      |
 |--------|---------------------------------------------------|--------------------------------|

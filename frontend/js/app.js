@@ -152,6 +152,14 @@
             this.currentRoute = path;
             const main = document.querySelector('[data-view="main"]');
             if (!main) return;
+            const shell = document.querySelector('.shell');
+            if (shell) {
+                shell.classList.toggle('shell--wide', path === '/faematch' || path === '/hub' || path === '/faemap');
+                shell.classList.toggle('shell--faematch', path === '/faematch');
+                shell.classList.toggle('shell--faehub', path === '/hub');
+                shell.classList.toggle('shell--faemap', path === '/faemap');
+                shell.classList.toggle('shell--feed', path === '/feed' || path === '/' || path === '');
+            }
             FaeUtils.clear(main);
             window.scrollTo(0, 0);
             this.highlightActive();
@@ -160,14 +168,16 @@
             this.updateRightbar();
 
             if (path === '/feed' || path === '/' || path === '') {
-                main.appendChild(FaeUtils.el('div', { class: 'page-header' },
-                    FaeUtils.el('h1', { class: 'page-header__title' }, 'Inicio'),
-                ));
+                this.renderFeedWelcome(main);
                 await FaeFeed.renderFeed(main, 'following');
             } else if (path === '/explore') {
                 await FaeExplore.render(main);
+            } else if (path === '/faematch') {
+                await FaeMatch.render(main);
             } else if (path === '/hub') {
                 await FaeHub.render(main);
+            } else if (path === '/faemap') {
+                await FaeMap.render(main);
             } else if (path === '/messages') {
                 await FaeMessages.render(main);
             } else if (path === '/notifications') {
@@ -187,6 +197,27 @@
             } else {
                 main.appendChild(FaeUtils.el('div', { class: 'empty' }, 'Pagina nao encontrada.'));
             }
+        },
+
+        renderFeedWelcome(container) {
+            const me = FaeAuth.currentUser || {};
+            const firstName = (me.name || me.username || 'aluno').split(' ')[0];
+            const hour = new Date().getHours();
+            const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+            const hero = FaeUtils.el('section', { class: 'feed-welcome' },
+                FaeUtils.el('div', { class: 'feed-welcome__copy' },
+                    FaeUtils.el('span', { class: 'feed-welcome__brand' }, 'FaeNet'),
+                    FaeUtils.el('h1', {}, `${greeting}, `, FaeUtils.el('strong', {}, firstName)),
+                    FaeUtils.el('p', {}, 'Pronto para transformar ideias em projetos?'),
+                    FaeUtils.el('span', { class: 'feed-welcome__course' }, '▣ ', me.turma || me.curso || 'Comunidade ETESC'),
+                ),
+                FaeUtils.el('div', { class: 'feed-welcome__orbit', 'aria-hidden': 'true' },
+                    FaeUtils.el('span', { class: 'feed-welcome__spark feed-welcome__spark--one' }),
+                    FaeUtils.el('span', { class: 'feed-welcome__spark feed-welcome__spark--two' }),
+                    FaeUtils.el('span', { class: 'feed-welcome__monogram' }, 'F'),
+                ),
+            );
+            container.appendChild(hero);
         },
 
         renderSettings(container) {

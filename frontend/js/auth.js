@@ -45,6 +45,34 @@
             root.appendChild(tpl.content.cloneNode(true));
 
             const form = root.querySelector('[data-form="login"]');
+            const password = form.querySelector('input[name="password"]');
+            const togglePassword = form.querySelector('[data-action="toggle-password"]');
+            if (togglePassword && password) {
+                togglePassword.addEventListener('click', () => {
+                    const visible = password.type === 'text';
+                    password.type = visible ? 'password' : 'text';
+                    togglePassword.setAttribute('aria-pressed', String(!visible));
+                    togglePassword.setAttribute('aria-label', visible ? 'Mostrar senha' : 'Ocultar senha');
+                    togglePassword.firstElementChild.textContent = visible ? '◉' : '⊘';
+                });
+            }
+
+            root.querySelectorAll('[data-demo-user]').forEach(button => {
+                button.addEventListener('click', () => {
+                    form.elements.username.value = button.dataset.demoUser;
+                    form.elements.password.value = 'demo1234';
+                    form.elements.username.focus();
+                    FaeUtils.info('Conta de demonstração preenchida.');
+                });
+            });
+
+            const forgot = root.querySelector('[data-action="forgot-password"]');
+            if (forgot) {
+                forgot.addEventListener('click', () => {
+                    FaeUtils.info('A recuperação de senha será liberada em breve.');
+                });
+            }
+
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const data = new FormData(form);

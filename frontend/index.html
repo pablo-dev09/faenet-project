@@ -16,13 +16,14 @@
     <link rel="stylesheet" href="/css/layout.css" />
     <link rel="stylesheet" href="/css/components.css" />
     <link rel="stylesheet" href="/css/responsive.css" />
-    <link rel="icon" type="image/png" href="/img/logo-faenet.png" />
-    <link rel="apple-touch-icon" href="/img/logo-faenet.png" />
+    <link rel="stylesheet" href="/css/experience.css" />
+    <link rel="icon" type="image/svg+xml" href="/img/faenet-mark.svg" />
+    <link rel="apple-touch-icon" href="/img/faenet-mark.svg" />
 </head>
 <body>
     <!-- Loading inicial -->
     <div id="app-loading" class="app-loading">
-        <img class="app-loading__logo" src="/img/logo-faenet.png" alt="FaeNet" />
+        <img class="app-loading__logo" src="/img/faenet-mark.svg" alt="FaeNet" />
         <div class="app-loading__title">FaeNet</div>
         <div class="app-loading__spinner"></div>
     </div>
@@ -38,53 +39,64 @@
 
     <!-- Templates HTML usados pelos modulos JS -->
     <template id="tpl-login">
-        <div class="auth">
-            <div class="auth__panel">
-                <div class="auth__brand">
-                    <img class="auth__logo" src="/img/logo-faenet.png" alt="FaeNet" />
-                    <div>
-                        <div class="auth__logo--text">FaeNet</div>
-                        <div class="auth__tagline">A rede social academica da ETESC.</div>
+        <div class="auth auth--login">
+            <div class="auth__backdrop" aria-hidden="true"></div>
+            <section class="auth__panel auth__panel--login">
+                <div class="auth__login-content">
+                    <div class="auth__brand">
+                        <img class="auth__logo" src="/img/faenet-mark.svg" alt="" />
+                        <div>
+                            <div class="auth__logo--text">FaeNet</div>
+                            <div class="auth__tagline">Rede acadêmica da ETESC</div>
+                        </div>
                     </div>
+                    <form class="auth__form auth__form--login" data-form="login">
+                        <div class="auth__eyebrow">Portal do aluno</div>
+                        <h1 class="auth__title">Bem-vindo de volta</h1>
+                        <p class="auth__subtitle">Entre para continuar na comunidade FaeNet.</p>
+                        <label class="field">
+                            <span class="field__label">Usuário</span>
+                            <span class="auth__input-wrap"><span class="auth__input-icon" aria-hidden="true">♙</span><input class="field__input" name="username" type="text" required autocomplete="username" placeholder="Seu usuário" /></span>
+                        </label>
+                        <label class="field">
+                            <span class="field__label">Senha</span>
+                            <span class="auth__password-wrap">
+                                <span class="auth__input-icon" aria-hidden="true">◇</span>
+                                <input class="field__input" name="password" type="password" required autocomplete="current-password" placeholder="Sua senha" />
+                                <button class="auth__password-toggle" type="button" data-action="toggle-password" aria-label="Mostrar senha" aria-pressed="false">
+                                    <span aria-hidden="true">◉</span>
+                                </button>
+                            </span>
+                        </label>
+                        <div class="auth__options">
+                            <label class="auth__remember"><input type="checkbox" name="remember" checked /><span>Lembrar de mim</span></label>
+                            <button type="button" class="auth__forgot" data-action="forgot-password">Esqueci minha senha</button>
+                        </div>
+                        <button class="btn btn--primary btn--block auth__submit" type="submit">Entrar</button>
+                        <div class="auth__divider"><span>Ainda não faz parte?</span></div>
+                        <a class="btn btn--ghost btn--block auth__create" href="/register" data-link>Criar conta</a>
+                        <details class="auth__demo">
+                            <summary>⚗ Acessar conta de demonstração</summary>
+                            <button type="button" class="auth__demo-account" data-demo-user="pablo">pablo <span>demo1234</span></button>
+                            <button type="button" class="auth__demo-account" data-demo-user="marlon">marlon <span>demo1234</span></button>
+                            <button type="button" class="auth__demo-account" data-demo-user="aline">aline <span>demo1234</span></button>
+                        </details>
+                    </form>
                 </div>
-                <form class="auth__form" data-form="login">
-                    <h2 class="auth__title">Entrar</h2>
-                    <label class="field">
-                        <span class="field__label">Usuario</span>
-                        <input class="field__input" name="username" type="text" required autocomplete="username" placeholder="seu usuario" />
-                    </label>
-                    <label class="field">
-                        <span class="field__label">Senha</span>
-                        <input class="field__input" name="password" type="password" required autocomplete="current-password" placeholder="sua senha" />
-                    </label>
-                    <button class="btn btn--primary btn--block" type="submit">Entrar</button>
-                    <p class="auth__hint">Nao tem conta? <a href="/register" data-link>Criar conta</a></p>
-                    <details class="auth__demo">
-                        <summary>Contas de demonstracao</summary>
-                        <p class="muted">Usuario: <code>pablo</code> · Senha: <code>demo1234</code></p>
-                        <p class="muted">Usuario: <code>marlon</code> · Senha: <code>demo1234</code></p>
-                        <p class="muted">Usuario: <code>aline</code> · Senha: <code>demo1234</code></p>
-                    </details>
-                </form>
-            </div>
-            <div class="auth__art" aria-hidden="true">
-                <div class="auth__art-grid"></div>
-                <div class="auth__art-glow"></div>
-                <div class="auth__art-card">
-                    <div class="auth__art-title">Conectando ideias. Construindo comunidade.</div>
-                    <ul class="auth__art-list">
-                        <li>Feed academico com enquetes e midia</li>
-                        <li>Stories de 24h</li>
-                        <li>Mensagens privadas com arquivos</li>
-                        <li>Hub do Curso: estagios, provas e forum</li>
-                    </ul>
+            </section>
+            <section class="auth__story" aria-label="Sobre a comunidade FaeNet">
+                <div class="auth__story-copy">
+                    <h2>Ideias encontram<br />pessoas.<br /><strong>Projetos ganham vida.</strong></h2>
+                    <p>CONECTE &nbsp;·&nbsp; COLABORE &nbsp;·&nbsp; CONSTRUA</p>
                 </div>
-            </div>
+                <div class="auth__story-chip auth__story-chip--ideas"><span class="auth__story-chip-icon">♚</span><span><b>Encontre sua equipe</b><small>Pessoas certas para grandes ideias.</small></span></div>
+                <div class="auth__story-chip auth__story-chip--community"><span class="auth__story-chip-icon">✦</span><span><b>Crie algo incrível</b><small>Da ideia ao projeto, juntos na FaeNet.</small></span></div>
+            </section>
         </div>
     </template>
 
     <template id="tpl-register">
-        <div class="auth">
+        <div class="auth auth--register">
             <div class="auth__panel">
                 <div class="auth__brand">
                     <div class="auth__logo">FaeNet</div>
@@ -130,17 +142,19 @@
         <div class="shell">
             <aside class="sidebar" aria-label="Menu principal">
                 <div class="sidebar__brand">
-                    <img class="sidebar__logo" src="/img/logo-faenet.png" alt="FaeNet" />
+                    <img class="sidebar__logo" src="/img/faenet-mark.svg" alt="FaeNet" />
                     <div class="sidebar__logo-text">FaeNet</div>
                 </div>
                 <nav class="sidebar__nav">
-                    <a class="sidebar__link" data-route="feed" href="/feed"><span class="sidebar__icon">🏠</span><span>Inicio</span></a>
-                    <a class="sidebar__link" data-route="explore" href="/explore"><span class="sidebar__icon">🔍</span><span>Explorar</span></a>
-                    <a class="sidebar__link" data-route="hub" href="/hub"><span class="sidebar__icon">📚</span><span>Hub do Curso</span></a>
-                    <a class="sidebar__link" data-route="messages" href="/messages"><span class="sidebar__icon">✉️</span><span>Mensagens</span><span class="badge" data-badge="messages" hidden>0</span></a>
-                    <a class="sidebar__link" data-route="notifications" href="/notifications"><span class="sidebar__icon">🔔</span><span>Notificacoes</span><span class="badge" data-badge="notifications" hidden>0</span></a>
-                    <a class="sidebar__link" data-route="profile" href="/profile"><span class="sidebar__icon">👤</span><span>Perfil</span></a>
-                    <a class="sidebar__link" data-route="settings" href="/settings"><span class="sidebar__icon">⚙️</span><span>Configuracoes</span></a>
+                    <a class="sidebar__link" data-route="feed" href="/feed" data-tip="Início"><span class="sidebar__icon">⌂</span><span>Início</span></a>
+                    <a class="sidebar__link" data-route="explore" href="/explore" data-tip="Explorar"><span class="sidebar__icon">⌕</span><span>Explorar</span></a>
+                    <a class="sidebar__link" data-route="faematch" href="/faematch" data-tip="FaeMatch"><span class="sidebar__icon">♧</span><span>FaeMatch</span></a>
+                    <a class="sidebar__link" data-route="faemap" href="/faemap" data-tip="FaeMap"><span class="sidebar__icon">⌖</span><span>FaeMap</span></a>
+                    <a class="sidebar__link" data-route="hub" href="/hub" data-tip="FaeHub+"><span class="sidebar__icon">◇</span><span>FaeHub+</span></a>
+                    <a class="sidebar__link" data-route="messages" href="/messages" data-tip="Mensagens"><span class="sidebar__icon">□</span><span>Mensagens</span><span class="badge" data-badge="messages" hidden>0</span></a>
+                    <a class="sidebar__link" data-route="notifications" href="/notifications" data-tip="Notificações"><span class="sidebar__icon">♢</span><span>Notificações</span><span class="badge" data-badge="notifications" hidden>0</span></a>
+                    <a class="sidebar__link" data-route="profile" href="/profile" data-tip="Perfil"><span class="sidebar__icon">♙</span><span>Perfil</span></a>
+                    <a class="sidebar__link" data-route="settings" href="/settings" data-tip="Configurações"><span class="sidebar__icon">⚙</span><span>Configurações</span></a>
                 </nav>
                 <button class="btn btn--primary btn--block sidebar__compose" data-action="compose">
                     <span>+ Criar publicacao</span>
@@ -158,25 +172,30 @@
             <main class="main" data-view="main"></main>
 
             <aside class="rightbar" aria-label="Sugestoes e atalhos">
-                <div class="rightbar__block">
-                    <div class="rightbar__title">Usuarios online</div>
+                <div class="rightbar__top"><button class="rightbar__top-action" aria-label="Pesquisar">⌕</button><button class="rightbar__top-action" aria-label="Notificações">♢</button></div>
+                <div class="rightbar__block rightbar__block--online">
+                    <div class="rightbar__heading"><div class="rightbar__title">Agora na FaeNet</div><a href="/faemap" data-link><span class="presence-dot"></span> Ver mapa</a></div>
                     <div class="rightbar__list" data-list="online"></div>
                 </div>
-                <div class="rightbar__block">
-                    <div class="rightbar__title">Sugestoes para seguir</div>
-                    <div class="rightbar__list" data-list="suggestions"></div>
+                <div class="rightbar__block rightbar__featured">
+                    <div class="rightbar__heading"><div class="rightbar__title">Projetos em destaque</div><a href="/faematch" data-link>Ver todos</a></div>
+                    <a href="/faematch" data-link class="featured-project"><span class="featured-project__icon">↗</span><span><b>StudyFlow</b><small>Organize seus estudos com IA</small></span><span>♥ 42</span></a>
+                    <a href="/faematch" data-link class="featured-project"><span class="featured-project__icon featured-project__icon--green">⌁</span><span><b>EcoCampus</b><small>Sustentabilidade no campus</small></span><span>♥ 28</span></a>
                 </div>
                 <div class="rightbar__block rightbar__shortcut">
-                    <div class="rightbar__title">Hub do Curso</div>
-                    <p class="muted">Estagios, provas e forum de duvidas separados por curso.</p>
-                    <a class="btn btn--ghost btn--block" href="/hub" data-link>Abrir Hub</a>
+                    <div class="rightbar__hub-icon">◇</div><div class="rightbar__title">FaeHub+</div>
+                    <p class="muted">Seu portal acadêmico para notas, frequência, horários e muito mais.</p>
+                    <a class="btn btn--primary btn--block" href="/hub" data-link>Abrir FaeHub+ ↗</a>
                 </div>
+                <div class="rightbar__list is-hidden-data" data-list="suggestions" hidden></div>
             </aside>
 
             <nav class="bottombar" aria-label="Navegacao inferior">
                 <a class="bottombar__link" data-route="feed" href="/feed"><span>🏠</span><span>Inicio</span></a>
                 <a class="bottombar__link" data-route="explore" href="/explore"><span>🔍</span><span>Explorar</span></a>
+                <a class="bottombar__link" data-route="faematch" href="/faematch"><span>👥</span><span>Match</span></a>
                 <button class="bottombar__compose" data-action="compose">＋</button>
+                <a class="bottombar__link" data-route="faemap" href="/faemap"><span>⌖</span><span>Mapa</span></a>
                 <a class="bottombar__link" data-route="messages" href="/messages"><span>✉️</span><span>Chat</span><span class="badge" data-badge="messages" hidden>0</span></a>
                 <a class="bottombar__link" data-route="notifications" href="/notifications"><span>🔔</span><span>Notif.</span><span class="badge" data-badge="notifications" hidden>0</span></a>
             </nav>
@@ -190,6 +209,8 @@
     <script src="/js/feed.js"></script>
     <script src="/js/profile.js"></script>
     <script src="/js/messages.js"></script>
+    <script src="/js/faematch.js"></script>
+    <script src="/js/faemap.js"></script>
     <script src="/js/hub.js"></script>
     <script src="/js/notifications.js"></script>
     <script src="/js/explore.js"></script>

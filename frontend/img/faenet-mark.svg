@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">FaeNet</title>
+  <defs>
+    <linearGradient id="g" x1="8" y1="6" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#21c7f5"/>
+      <stop offset=".5" stop-color="#3979ff"/>
+      <stop offset="1" stop-color="#8b4fff"/>
+    </linearGradient>
+    <filter id="s" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#255cf2" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <rect x="3" y="3" width="58" height="58" rx="16" fill="url(#g)" filter="url(#s)"/>
+  <path d="M21 18.5h27.5c0 5.7-3.8 9.5-9.5 9.5H28.5v4.2h14.8c0 5.6-3.7 9.4-9.4 9.4h-5.4v3.1c0 4.7-3.1 7.8-7.5 7.8V18.5Z" fill="#fff"/>
+</svg>

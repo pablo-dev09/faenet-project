@@ -8,6 +8,20 @@
     :root {
         --rightbar-w: 0px;
     }
+
+    .match-layout { grid-template-columns: 1fr; }
+    .match-aside { grid-template-columns: repeat(2, minmax(0, 1fr)); display: grid; }
+    .match-tip { grid-column: 1 / -1; }
+    .faehub-header__links .faehub-mini-card--support { display: none; }
+    .faehub-layout { grid-template-columns: 1fr; }
+    .faehub-integration { min-height: 350px; }
+}
+
+@media (max-width: 1300px) and (min-width: 769px) {
+    .match-people-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .match-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .match-search { grid-column: span 2; }
+    .faehub-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
@@ -17,6 +31,18 @@
     .auth__art { display: none; }
     .auth__panel { max-width: 100%; padding: 24px 12px; }
     .auth__form { padding: 22px; }
+
+    .auth--login {
+        grid-template-columns: 1fr;
+        padding: 0;
+        background: #070710;
+    }
+    .auth--login::before {
+        background: linear-gradient(90deg, rgba(6, 6, 15, .98) 0%, rgba(7, 7, 17, .9) 62%, rgba(7, 7, 18, .52) 100%);
+    }
+    .auth--login .auth__backdrop { background-position: 66% center; opacity: .7; }
+    .auth__panel--login { max-width: 600px; padding: 38px 28px 70px; }
+    .auth__login-content { width: 100%; }
 }
 
 @media (max-width: 768px) {
@@ -26,6 +52,7 @@
     }
 
     .main { padding: 12px 10px 100px; }
+    .sidebar { display: none; }
 
     .page-header { flex-direction: column; align-items: flex-start; }
     .page-header__title { font-size: var(--fs-xl); }
@@ -51,6 +78,49 @@
     .profile__name { font-size: var(--fs-lg); }
     .profile__avatar-wrap { margin-top: -40px; }
     .profile__avatar-wrap .avatar { width: 80px; height: 80px; font-size: 28px; }
+
+    .shell--wide .main { padding: 15px 12px 90px; }
+    .match-header { align-items: flex-start; }
+    .match-header__actions { flex-direction: column; align-items: stretch; }
+    .match-help { justify-content: center; }
+    .match-tabs { margin-left: -12px; margin-right: -12px; }
+    .match-layout { grid-template-columns: 1fr; }
+    .match-aside { grid-template-columns: 1fr; }
+    .match-tip { grid-column: auto; }
+    .match-people-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .match-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .match-search { grid-column: 1 / -1; }
+    .match-project-grid { grid-template-columns: 1fr; }
+    .faehub-header { align-items: flex-start; }
+    .faehub-header__links { flex: 1; }
+    .faehub-mini-card { min-width: 0; width: 100%; }
+    .faehub-hero { min-height: 390px; }
+    .faehub-hero__overlay { width: 65%; padding: 46px 28px 30px; }
+    .faehub-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+    .match-header { flex-direction: column; }
+    .match-header__actions { width: 100%; flex-direction: row; }
+    .match-header__actions .btn { flex: 1; }
+    .match-header h1 { font-size: 27px; }
+    .match-tab { padding-inline: 14px; }
+    .match-hero { padding: 27px 23px; }
+    .match-hero__copy { width: 100%; }
+    .match-network { opacity: .2; }
+    .match-people-grid { grid-template-columns: 1fr; }
+    .match-section-heading { align-items: flex-start; flex-direction: column; }
+    .match-projects-heading { align-items: flex-start; flex-direction: column; }
+    .match-projects-heading .btn { width: 100%; }
+    .faehub-header { flex-direction: column; }
+    .faehub-header__links { width: 100%; }
+    .faehub-brand__icon { width: 60px; height: 60px; font-size: 28px; }
+    .faehub-brand h1 { font-size: 30px; }
+    .faehub-brand p { font-size: 12px; }
+    .faehub-hero { background-position: 66% center; }
+    .faehub-hero::after { background: linear-gradient(90deg, rgba(7,8,20,.99), rgba(8,9,23,.88) 72%, rgba(8,9,23,.48)); }
+    .faehub-hero__overlay { width: 100%; padding: 40px 22px 28px; }
+    .faehub-hero h2 { font-size: 30px; }
 }
 
 @media (max-width: 480px) {
@@ -61,6 +131,20 @@
 
     .compose__media { grid-template-columns: 1fr 1fr; }
     .story { min-width: 56px; }
+
+    .auth--login .auth__logo { width: 55px; height: 55px; }
+    .auth--login .auth__logo--text { font-size: 31px; }
+    .auth--login .auth__tagline { font-size: 12px; }
+    .auth__form--login { padding: 21px; }
+    .match-header__actions { flex-direction: column; }
+    .match-header__actions .btn { width: 100%; }
+    .match-hero { min-height: 230px; }
+    .match-network { display: none; }
+    .match-filters { grid-template-columns: 1fr; }
+    .match-search { grid-column: auto; }
+    .match-person__avatar { width: 60px; height: 60px; }
+    .faehub-feature-grid { grid-template-columns: 1fr; }
+    .faehub-feature { min-height: 0; }
 }
 
 @media (max-width: 360px) {
