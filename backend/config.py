@@ -2,8 +2,8 @@
 FaeNet - Configuracoes
 ======================
 Centraliza as configuracoes da aplicacao Flask, lendo valores do ambiente
-via python-dotenv. Suporta SQLite (desenvolvimento) e PostgreSQL (producao)
-atraves de uma unica variavel ``DATABASE_URL``.
+via python-dotenv. O Supabase/PostgreSQL e o banco persistente do projeto;
+SQLite permanece somente como fallback local e para testes isolados.
 """
 
 import os
@@ -17,6 +17,41 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
+def _database_url() -> str:
+    """Normaliza URLs do Supabase/Render para o driver psycopg 3."""
+    raw = os.getenv("DATABASE_URL", "").strip()
+    if not raw:
+        return f"sqlite:///{BASE_DIR / 'instance' / 'faenet.db'}"
+    if raw.startswith("postgres://"):
+        return "postgresql+psycopg://" + raw.removeprefix("postgres://")
+    if raw.startswith("postgresql://"):
+        return "postgresql+psycopg://" + raw.removeprefix("postgresql://")
+    return raw
+
+
+DATABASE_URI = _database_url()
+IS_POSTGRES = DATABASE_URI.startswith("postgresql")
+
+
+def _engine_options() -> dict:
+    if not IS_POSTGRES:
+        return {}
+    try:
+        pool_size = max(1, int(os.getenv("DB_POOL_SIZE", "5")))
+    except (TypeError, ValueError):
+        pool_size = 5
+    return {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_size": pool_size,
+        "max_overflow": 2,
+        "connect_args": {
+            "sslmode": os.getenv("DB_SSLMODE", "require"),
+            "connect_timeout": 10,
+        },
+    }
+
+
 class Config:
     """Configuracao base compartilhada por todos os ambientes."""
 
@@ -27,12 +62,10 @@ class Config:
     # sobrescrita no ambiente para apontar a uma instancia local ou de testes.
     FAEHUB_URL = os.getenv("FAEHUB_URL", "https://faehub-plus.onrender.com/")
 
-    # Banco de dados (aceita sqlite:///... e postgresql+psycopg2://...)
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "DATABASE_URL",
-        f"sqlite:///{BASE_DIR / 'instance' / 'faenet.db'}",
-    )
+    # Banco de dados. Em producao, use o Session Pooler do Supabase.
+    SQLALCHEMY_DATABASE_URI = DATABASE_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = _engine_options()
 
     # Limite de upload (padrao 16 MB)
     _max_upload = os.getenv("MAX_UPLOAD_BYTES", str(16 * 1024 * 1024))
@@ -81,6 +114,7 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_ENGINE_OPTIONS = {}
 
 
 # Mapa usado pela factory para resolver a classe a partir de FLASK_ENV.
@@ -94,4 +128,8 @@ CONFIG_MAP = {
 def get_config() -> type[Config]:
     """Retorna a classe de configuracao apropriada para o ambiente atual."""
     env = os.getenv("FLASK_ENV", "development").lower()
+    if env == "production" and not IS_POSTGRES:
+        raise RuntimeError(
+            "DATABASE_URL do Supabase/PostgreSQL e obrigatoria em producao."
+        )
     return CONFIG_MAP.get(env, DevelopmentConfig)

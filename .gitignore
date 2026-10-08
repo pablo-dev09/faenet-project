@@ -22,6 +22,7 @@ venv/
 env/
 ENV/
 .pytest_cache/
+.test_dependencies/
 
 # Uploads locais (manter estrutura mas ignorar arquivos)
 backend/uploads/avatars/*

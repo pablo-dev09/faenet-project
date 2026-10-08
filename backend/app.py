@@ -13,6 +13,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request
 from flask_login import current_user
+from sqlalchemy import text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from .config import get_config
@@ -83,15 +84,14 @@ def _register_error_handlers(app: Flask) -> None:
         """Mensagem amigavel quando o banco nao esta acessivel.
 
         Causas comuns:
-          - Banco SQLite nao criado (rode ``flask --app backend.app init-db``)
           - ``DATABASE_URL`` apontando para URL invalida
-          - PostgreSQL em producao sem tabelas
+          - Senha ou conexao do Supabase invalida
         """
         app.logger.error("Falha ao acessar o banco: %s", e)
         return jsonify({
             "ok": False,
             "error": {
-                "message": "Banco de dados indisponivel. Rode 'flask --app backend.app init-db' e 'flask --app backend.app seed-demo'.",
+                "message": "Banco de dados indisponivel. Verifique a conexao configurada para o Supabase.",
                 "code": "db_unavailable",
             }
         }), 503
@@ -145,6 +145,12 @@ def create_app() -> Flask:
     _register_error_handlers(app)
     _register_shell_context(app)
     _register_cli(app)
+
+    @app.get("/healthz")
+    def healthz():
+        """Health check do Render, incluindo acesso ao PostgreSQL."""
+        db.session.execute(text("select 1"))
+        return jsonify({"ok": True, "service": "faenet"})
 
     return app
 

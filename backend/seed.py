@@ -163,7 +163,7 @@ def seed_demo_data() -> None:
         p2 = _make_post(
             "marlon",
             "Backend Flask no ar. API REST pronta pra desktop e, no futuro, tambem pro app. "
-            "Stack: Flask + SQLAlchemy + PostgreSQL/SQLite. Login, feed, stories, mensagens, hub. "
+            "Stack: Flask + SQLAlchemy + Supabase/PostgreSQL. Login, feed, stories, mensagens, hub. "
             "Tudo organizado pra escalar com a FaeNet.",
             hours_ago=4,
         )

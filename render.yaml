@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: faenet
+    runtime: python
+    region: virginia
+    plan: free
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT backend.app:app
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_SSLMODE
+        value: require
+      - key: DB_POOL_SIZE
+        value: 5
+      - key: FAEHUB_URL
+        value: https://faehub-plus.onrender.com/
+      - key: MAX_UPLOAD_BYTES
+        value: 16777216
+
