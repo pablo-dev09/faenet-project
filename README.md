@@ -61,6 +61,7 @@ FaeNet e uma aplicacao web completa inspirada em redes sociais modernas (feed, s
 - FaeMatch: conexoes profissionais por habilidades, interesses e projetos
 - FaeMap: mapa 3D do campus com presenca online voluntaria e localizacao aproximada
 - FaeHub+: apresentacao integrada do novo portal academico da ETESC
+- Redirecionamento configuravel da area FaeHub+ para o portal academico
 - Interface administrativa (usuario com `is_admin`) pode apagar qualquer item
 - Toasts, modais, loading states, empty states, confirmacoes
 

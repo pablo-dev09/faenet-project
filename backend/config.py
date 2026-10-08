@@ -23,6 +23,10 @@ class Config:
     # Chave usada pelo Flask para assinar sessoes e tokens.
     SECRET_KEY = os.getenv("SECRET_KEY", "faenet-dev-secret-change-me")
 
+    # Portal academico aberto pela area FaeHub+ da FaeNet. Em producao,
+    # configure a URL publica; o valor local permite testar os dois projetos.
+    FAEHUB_URL = os.getenv("FAEHUB_URL", "http://127.0.0.1:5000/")
+
     # Banco de dados (aceita sqlite:///... e postgresql+psycopg2://...)
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL",
