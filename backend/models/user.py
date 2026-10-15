@@ -9,7 +9,7 @@ e indicadores de presenca online.
 from datetime import datetime
 
 from flask_login import UserMixin
-from sqlalchemy import Boolean, DateTime, String, Text
+from sqlalchemy import Boolean, DateTime, String, Text, func, select
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -131,8 +131,15 @@ class User(UserMixin, db.Model):
             return parts[0][:2].upper()
         return (parts[0][0] + parts[-1][0]).upper()
 
-    def to_public_dict(self) -> dict:
+    def to_public_dict(self, *, counts: dict | None = None) -> dict:
         """Serializacao para o frontend (sem dados sensiveis)."""
+        if counts is None:
+            counts = {
+                "followers_count": db.session.scalar(select(func.count()).select_from(followers).where(
+                    followers.c.followed_id == self.username)),
+                "following_count": db.session.scalar(select(func.count()).select_from(followers).where(
+                    followers.c.follower_id == self.username)),
+            }
         return {
             "username": self.username,
             "name": self.name,
@@ -146,8 +153,8 @@ class User(UserMixin, db.Model):
             "last_seen": self.last_seen.isoformat() if self.last_seen else None,
             "joined": self.joined.isoformat() if self.joined else None,
             "is_admin": bool(self.is_admin),
-            "followers_count": len(self.followers) if self.followers is not None else 0,
-            "following_count": len(self.followed) if self.followed is not None else 0,
+            "followers_count": counts["followers_count"],
+            "following_count": counts["following_count"],
         }
 
     def __repr__(self) -> str:  # pragma: no cover

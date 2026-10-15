@@ -41,7 +41,13 @@ class Story(db.Model):
         now = now or datetime.utcnow()
         return (now - (self.timestamp or now)) > timedelta(hours=STORY_TTL_HOURS)
 
-    def to_dict(self, current_user: str | None = None) -> dict:
+    def to_dict(self, current_user: str | None = None, *, relations: dict | None = None) -> dict:
+        if relations is None:
+            relations = {
+                "views_count": len(self.viewers),
+                "viewed_by_me": any(u.username == current_user for u in self.viewers) if current_user else False,
+                "author": self.author.to_public_dict() if self.author else None,
+            }
         return {
             "id": self.id,
             "username": self.username,
@@ -51,9 +57,7 @@ class Story(db.Model):
             "expires_at": (
                 self.timestamp + timedelta(hours=STORY_TTL_HOURS)
             ).isoformat() if self.timestamp else None,
-            "views_count": len(self.viewers) if self.viewers is not None else 0,
-            "viewed_by_me": any(u.username == current_user for u in self.viewers) if (current_user and self.viewers) else False,
-            "author": self.author.to_public_dict() if self.author else None,
+            **relations,
         }
 
     def __repr__(self) -> str:  # pragma: no cover

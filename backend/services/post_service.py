@@ -6,10 +6,12 @@ repostar, comentar, votar em enquete e remover.
 """
 
 from datetime import datetime
-from typing import Iterable
+from sqlalchemy import func, select
+from sqlalchemy.orm import joinedload
 
 from ..extensions import db
-from ..models import Comment, Notification, Post, User, post_likes, post_reposts, post_saves
+from ..models import Comment, Notification, Post, User, followers, post_likes, post_reposts, post_saves
+from .serialization import serialize_posts, serialize_users
 from ..utils.security import MAX_TEXT_LEN, sanitize_text
 
 
@@ -32,12 +34,18 @@ def _user_reposted_post(user: User, post: Post) -> bool:
     return db.session.query(post_reposts).filter_by(user_id=user.username, post_id=post.id).first() is not None
 
 
-def _attach_relations(post: Post, viewer: User | None) -> dict:
-    data = post.to_dict(current_user=viewer.username if viewer else None)
-    # Inclui o post original caso seja repost.
-    if post.repost_of and post.original is not None:
-        data["repost_of_data"] = post.original.to_dict(current_user=viewer.username if viewer else None)
-    return data
+def _post_query():
+    # Scalar joins preserve page size; no join to unbounded reaction collections.
+    return Post.query.options(joinedload(Post.author),
+                              joinedload(Post.original).joinedload(Post.author))
+
+
+def get_post(viewer: User, post_id: str) -> dict:
+    post = _post_query().filter_by(id=post_id).first()
+    if not post:
+        raise PostError("Publicacao nao encontrada.", 404)
+    # Detail/create endpoints historically do not embed repost_of_data.
+    return serialize_posts([post], viewer, include_original=False)[0]
 
 
 def list_feed(viewer: User, limit: int = 50, offset: int = 0, scope: str = "following") -> list[dict]:
@@ -49,44 +57,42 @@ def list_feed(viewer: User, limit: int = 50, offset: int = 0, scope: str = "foll
     offset = max(0, offset)
 
     if scope == "following":
-        followed_usernames = [u.username for u in viewer.followed] if viewer.followed else []
-        # Inclui tambem os proprios posts do usuario no feed.
-        followed_usernames.append(viewer.username)
-        query = Post.query.filter(Post.username.in_(followed_usernames))
+        followed = select(followers.c.followed_id).where(followers.c.follower_id == viewer.username)
+        query = _post_query().filter((Post.username == viewer.username) | Post.username.in_(followed))
     else:
-        query = Post.query
+        query = _post_query()
 
-    posts: Iterable[Post] = (
+    posts = (
         query.order_by(Post.timestamp.desc()).offset(offset).limit(limit).all()
     )
-    return [_attach_relations(p, viewer) for p in posts]
+    return serialize_posts(posts, viewer)
 
 
 def list_user_posts(viewer: User | None, username: str, limit: int = 50, offset: int = 0) -> list[dict]:
     limit = max(1, min(limit, 100))
     offset = max(0, offset)
     posts = (
-        Post.query.filter_by(username=username)
+        _post_query().filter_by(username=username)
         .order_by(Post.timestamp.desc())
         .offset(offset)
         .limit(limit)
         .all()
     )
-    return [_attach_relations(p, viewer) for p in posts]
+    return serialize_posts(posts, viewer)
 
 
 def list_saved_posts(viewer: User, limit: int = 50, offset: int = 0) -> list[dict]:
     limit = max(1, min(limit, 100))
     offset = max(0, offset)
     posts = (
-        Post.query.join(post_saves, post_saves.c.post_id == Post.id)
+        _post_query().join(post_saves, post_saves.c.post_id == Post.id)
         .filter(post_saves.c.user_id == viewer.username)
         .order_by(Post.timestamp.desc())
         .offset(offset)
         .limit(limit)
         .all()
     )
-    return [_attach_relations(p, viewer) for p in posts]
+    return serialize_posts(posts, viewer)
 
 
 def create_post(
@@ -173,7 +179,7 @@ def toggle_like(*, viewer: User, post_id: str) -> dict:
                 meta={"post_id": post_id},
             )
     db.session.commit()
-    return {"liked": liked, "likes_count": len(post.liked_by) if post.liked_by else 0}
+    return {"liked": liked, "likes_count": _reaction_count(post_likes, post_id)}
 
 
 def toggle_save(*, viewer: User, post_id: str) -> dict:
@@ -192,7 +198,7 @@ def toggle_save(*, viewer: User, post_id: str) -> dict:
         db.session.execute(post_saves.insert().values(user_id=viewer.username, post_id=post_id))
         saved = True
     db.session.commit()
-    return {"saved": saved, "saves_count": len(post.saved_by) if post.saved_by else 0}
+    return {"saved": saved, "saves_count": _reaction_count(post_saves, post_id)}
 
 
 def toggle_repost(*, viewer: User, post_id: str) -> dict:
@@ -219,7 +225,11 @@ def toggle_repost(*, viewer: User, post_id: str) -> dict:
                 meta={"post_id": post_id},
             )
     db.session.commit()
-    return {"reposted": reposted, "reposts_count": len(post.reposted_by) if post.reposted_by else 0}
+    return {"reposted": reposted, "reposts_count": _reaction_count(post_reposts, post_id)}
+
+
+def _reaction_count(table, post_id: str) -> int:
+    return db.session.scalar(select(func.count()).select_from(table).where(table.c.post_id == post_id))
 
 
 def add_comment(*, viewer: User, post_id: str, content: str) -> Comment:
@@ -249,7 +259,10 @@ def list_comments(*, post_id: str) -> list[dict]:
     post = Post.query.get(post_id)
     if not post:
         raise PostError("Publicacao nao encontrada.", 404)
-    return [c.to_dict() for c in post.comments]
+    comments = Comment.query.options(joinedload(Comment.author)).filter_by(post_id=post_id).order_by(Comment.timestamp).all()
+    authors = {c.author.username: c.author for c in comments if c.author}
+    data = {u["username"]: u for u in serialize_users(authors.values())}
+    return [c.to_dict(author_data=data.get(c.username)) for c in comments]
 
 
 def vote_poll(*, viewer: User, post_id: str, option_index: int) -> dict:

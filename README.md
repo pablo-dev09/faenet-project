@@ -428,6 +428,37 @@ Base: `/api`. Toda resposta segue `{ "ok": true, "data": ... }` ou `{ "ok": fals
 
 ---
 
+## Desempenho e testes de regressao
+
+As listagens agregam contadores no banco, restritos aos IDs da resposta, sem
+carregar colecoes inteiras de curtidas, comentarios ou seguidores. Autores e
+originais de reposts sao carregados junto da pagina; o filtro de seguidos e de
+stories ativos e feito em SQL. O resumo das conversas usa funcoes de janela,
+retornando somente a ultima mensagem e a quantidade de nao lidas por contato.
+Nao ha cache compartilhado de dados autenticados nem alteracoes no frontend.
+
+Medicoes em fixtures locais isoladas (consultas SQL, nao tempo de rede):
+
+| Cenario | Antes | Depois |
+|---|---:|---:|
+| Feed com 30 publicacoes/autores, incluindo repost | 209 | 7 |
+| Busca de 30 usuarios | 61 | 3 |
+| Resumo de 15 conversas com 10 mensagens cada | 46 | 3 |
+
+O numero de consultas do feed permanece em 7 para paginas nao vazias de ate
+100 itens. Isso nao elimina latencia de rede ou espera de inicializacao da
+hospedagem. Nao foi necessario alterar schema, credenciais ou permissoes.
+
+Depois de instalar `requirements.txt`, rode na raiz da FaeNet:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Os testes fixam `FLASK_ENV=testing` e um SQLite em memoria, sem dados reais.
+Cobrem equivalencia de payload, paginacao, reposts, curtidas/salvos, contadores,
+stories/expiracao, isolamento de mensagens, login e restricoes de acesso.
+
 ## Licenca
 
 Projeto academico desenvolvido como Projeto Final do curso de Informatica da ETESC / FAETEC. Licenca MIT.

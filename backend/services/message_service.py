@@ -6,11 +6,12 @@ direcionadas (from_user -> to_user); o feed do chat eh montado
 agregando mensagens nos dois sentidos.
 """
 
-from collections import defaultdict
 from datetime import datetime
+from sqlalchemy import case, func, select
 
 from ..extensions import db
 from ..models import Message, Notification, User
+from .serialization import serialize_users
 from ..utils.security import sanitize_text
 
 
@@ -23,34 +24,27 @@ class MessageError(Exception):
 
 def list_conversations(viewer: User) -> list[dict]:
     """Retorna o resumo das conversas (ultima mensagem, contadores)."""
-    rows = (
-        Message.query.filter(
-            (Message.from_user == viewer.username) | (Message.to_user == viewer.username)
-        )
-        .order_by(Message.timestamp.desc())
-        .all()
-    )
-
-    grouped: dict[str, list[Message]] = defaultdict(list)
-    for m in rows:
-        other = m.to_user if m.from_user == viewer.username else m.from_user
-        grouped[other].append(m)
-
-    conversations = []
-    for other_username, msgs in grouped.items():
-        other = User.query.get(other_username)
-        if not other:
-            continue
-        last = msgs[0]
-        unread = sum(1 for m in msgs if m.to_user == viewer.username and not m.read)
-        conversations.append({
-            "with": other.to_public_dict(),
-            "last_message": last.to_dict(),
-            "unread_count": unread,
-        })
-    # Ordena pela ultima mensagem.
-    conversations.sort(key=lambda c: c["last_message"]["timestamp"] or "", reverse=True)
-    return conversations
+    # Filter BEFORE ranking/counting: unrelated private conversations never enter
+    # this result. Transfer one message per peer, not the complete chat history.
+    peer = case((Message.from_user == viewer.username, Message.to_user), else_=Message.from_user)
+    ranked = select(
+        Message.id.label("message_id"), peer.label("peer"),
+        func.row_number().over(partition_by=peer,
+            order_by=(Message.timestamp.desc(), Message.id.desc())).label("position"),
+        func.sum(case(((Message.to_user == viewer.username) & (Message.read.is_(False)), 1), else_=0))
+            .over(partition_by=peer).label("unread_count"),
+    ).where((Message.from_user == viewer.username) | (Message.to_user == viewer.username)).subquery()
+    rows = db.session.execute(
+        select(Message, User, ranked.c.unread_count)
+        .join(ranked, ranked.c.message_id == Message.id)
+        .join(User, User.username == ranked.c.peer)
+        .where(ranked.c.position == 1)
+        .order_by(Message.timestamp.desc(), Message.id.desc())
+    ).all()
+    users = {user.username: user for _, user, _ in rows}
+    users = {u["username"]: u for u in serialize_users(users.values())}
+    return [{"with": users[user.username], "last_message": message.to_dict(),
+             "unread_count": unread} for message, user, unread in rows]
 
 
 def get_thread(viewer: User, other_username: str, limit: int = 100, before: str | None = None) -> list[dict]:
