@@ -107,11 +107,11 @@ def send_message(
     preview = text[:80] if text else ("📎 Arquivo" if file_type == "file" else "🖼️ Imagem")
     notif = Notification(
         to_user=recipient.username,
-        from_name=sender.name,
+        from_name=sender.name[:120],
         from_avatar_text=sender.avatar_initials(),
         from_avatar_img=sender.avatar_img,
         notif_type="message",
-        text=f"{sender.name}: {preview}",
+        text=f"{sender.name}: {preview}"[:200],
         meta_json=None,
     )
     db.session.add(notif)

@@ -8,7 +8,7 @@ from werkzeug.datastructures import FileStorage
 import test_federation as fixture
 from backend.app import app
 from backend.extensions import db
-from backend.models import User, Post, HubLink, ProfileImage, followers
+from backend.models import User, Post, HubLink, ProfileImage, Notification, followers
 from backend.services import onboarding
 
 
@@ -120,6 +120,22 @@ class OnboardingTests(unittest.TestCase):
             with self.assertRaises(onboarding.ProfileError):
                 onboarding.complete_existing(user,dict(handle='livre.novo',name='Pessoa Nova'),{})
         self.assertEqual(db.session.get(User,user.username).handle,old)
+
+    def test_long_display_name_and_actor_identity_survive_notifications(self):
+        self.callback();self.complete(action='create',name='Pessoa '+'A'*150)
+        user=User.query.one();key=user.username
+        target=User(username='recipient',handle='destino',name='Outra Pessoa',password_hash='unused')
+        db.session.add(target);db.session.commit()
+        from backend.services import user_service, message_service
+        user_service.follow_user(user,'destino')
+        notification=Notification.query.one().to_dict()
+        self.assertEqual(notification['meta']['username'],key)
+        self.assertLessEqual(len(notification['from_name']),120)
+        onboarding.complete_existing(user,dict(handle='mudou.nome',name='Nome Alterado'),{})
+        self.assertEqual(onboarding.find_user(notification['meta']['username']).handle,'mudou.nome')
+        user.name='Pessoa '+'A'*150;db.session.commit()
+        message_service.send_message(sender=user,to_user='recipient',text='Oi')
+        self.assertTrue(all(len(n.text)<=200 and len(n.from_name)<=120 for n in Notification.query.all()))
 
 
 if __name__=='__main__':unittest.main()

@@ -5,6 +5,7 @@ Busca, perfil, seguir/deixar de seguir e atualizacao do proprio perfil.
 """
 
 from datetime import datetime
+import json
 
 from sqlalchemy import or_, select
 
@@ -84,12 +85,12 @@ def follow_user(viewer: User, username: str) -> dict:
     from ..models import Notification
     n = Notification(
         to_user=target.username,
-        from_name=viewer.name,
+        from_name=viewer.name[:120],
         from_avatar_text=viewer.avatar_initials(),
         from_avatar_img=viewer.avatar_img,
         notif_type="follow",
-        text=f"{viewer.name} comecou a seguir voce",
-        meta_json=None,
+        text=f"{viewer.name} comecou a seguir voce"[:200],
+        meta_json=json.dumps(dict(username=viewer.username)),
     )
     db.session.add(n)
     db.session.commit()

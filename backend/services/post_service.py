@@ -322,11 +322,11 @@ def _create_notification(*, to_user: str, from_user: User, notif_type: str, text
     import json
     n = Notification(
         to_user=to_user,
-        from_name=from_user.name,
+        from_name=from_user.name[:120],
         from_avatar_text=from_user.avatar_initials(),
         from_avatar_img=from_user.avatar_img,
         notif_type=notif_type,
         text=text[:200],
-        meta_json=json.dumps(meta) if meta else None,
+        meta_json=json.dumps({**(meta or {}),'username':from_user.username}),
     )
     db.session.add(n)
