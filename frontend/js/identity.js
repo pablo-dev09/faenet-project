@@ -4,6 +4,16 @@ const errorBox=document.getElementById('identityError');
 let leaving=false,dirty=false,step=0;
 const steps=setup?Array.from(setup.querySelectorAll('[data-setup-step]')):[];
 const urls=new Map();
+function identitySubmitUrl(form){
+    // A named input such as name="action" shadows HTMLFormElement.action.
+    return form.getAttribute('action')||window.location.href;
+}
+function identityResponseError(response,body){
+    if((response.headers.get('Content-Type')||'').includes('application/json')){
+        try{const data=JSON.parse(body);if(typeof data.error?.message==='string')return data.error.message;}catch(_){}
+    }
+    return `Não foi possível concluir o cadastro (erro ${response.status}). Tente novamente; se continuar, reabra a entrada com FaeHub.`;
+}
 const showError=(message,field)=>{
     errorBox.textContent=message;errorBox.tabIndex=-1;
     if(field){field.setAttribute('aria-invalid','true');field.setAttribute('aria-describedby',(field.getAttribute('aria-describedby')||'')+' identityError');const owner=field.closest('[data-setup-step]');if(owner)showStep(Number(owner.dataset.setupStep));field.focus();}
@@ -84,11 +94,11 @@ document.querySelectorAll('[data-identity-form]').forEach(form=>form.addEventLis
     submit.style.minWidth=submit.getBoundingClientRect().width+'px';submit.textContent='Salvando perfil…';
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),30000);
     try{
-        const response=await fetch(form.action,{method:'POST',body:new FormData(form),credentials:'same-origin',signal:controller.signal});
+        const response=await fetch(identitySubmitUrl(form),{method:'POST',body:new FormData(form),credentials:'same-origin',signal:controller.signal});
         if(response.ok&&response.redirected){leaving=true;window.location.assign(response.url);return;}
-        const html=new DOMParser().parseFromString(await response.text(),'text/html');
+        const body=await response.text(),html=new DOMParser().parseFromString(body,'text/html');
         const invalid=html.querySelector('[aria-invalid=true]'),field=invalid?.name?form.elements.namedItem(invalid.name):null;
-        showError(html.getElementById('identityError')?.textContent||'Não foi possível salvar. Confira os dados e tente novamente.',field);
+        showError(html.getElementById('identityError')?.textContent||identityResponseError(response,body),field);
     }catch(_){showError('Não foi possível confirmar o salvamento. Confira a conexão e reabra a entrada com FaeHub antes de tentar novamente.');}
     finally{clearTimeout(timer);if(!leaving){delete form.dataset.busy;form.removeAttribute('aria-busy');document.querySelectorAll('button').forEach(button=>button.disabled=false);submit.textContent=original;}}
 }));

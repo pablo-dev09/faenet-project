@@ -80,3 +80,8 @@ indeterminado (sem percentual fictício); remover seleção/corrigir permite ree
 Saída da página com rascunho usa beforeunload; nenhum dado vai para localStorage.
 Contas automáticas incompletas recebem configuração obrigatória, não um novo perfil.
 Prévia é variante expressiva do tema existente; tokens, permissões e senha não mudam.
+
+Envio usa o atributo action (ou URL atual), nunca form.action: o campo oculto de
+ação mascara essa propriedade no DOM. Regressão em `tests/test_identity_client.js`.
+Erros JSON preservam a mensagem do servidor; respostas inesperadas identificam o
+status HTTP sem atribuir falhas internas aos dados do titular.

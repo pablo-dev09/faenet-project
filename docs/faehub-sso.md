@@ -62,3 +62,8 @@ PostgreSQL com RLS/Data API fechada, não no disco temporário do Render. Leitur
 imagem exige sessão FaeHub válida; rotas API não usam cache compartilhado.
 Testes adicionais: `tests/test_onboarding.py` cobre escolhas, colisão, arquivos,
 quatro perfis, rollback, edição e preservação de posts/seguidores/vínculo.
+
+Regressão do envio no navegador: `node --test tests/test_identity_client.js`.
+O campo oculto `name="action"` mascara `form.action` no DOM; o fetch deve ler
+`getAttribute('action')` ou a URL atual. Caso contrário, o cadastro é enviado para
+`[object HTMLInputElement]` e recebe 405, antes de alcançar o serviço de criação.
