@@ -11,6 +11,7 @@ Identidade visual: `DESIGN.md`, CSS canônico global/experience, sem rebrand.
 | Form | identidade server-rendered | `frontend/js/identity.js` | vincular / criar | `tests/test_federation.py` + navegador |
 | Scrollbar | tema global | `frontend/css/global.css` | viewport / conteúdo | navegador e cores forçadas |
 | CRUD | vínculo de identidade | `backend/services/federation.py` | criar vínculo sem mesclar dados | testes de preservação |
+| CRUD do feed | região de feed | `frontend/js/feed.js` | publicar/atualizar sem duplicação | `tests/test_feed_client.js` + navegador |
 
 ## Fontes de negócio
 
@@ -85,3 +86,14 @@ Envio usa o atributo action (ou URL atual), nunca form.action: o campo oculto de
 ação mascara essa propriedade no DOM. Regressão em `tests/test_identity_client.js`.
 Erros JSON preservam a mensagem do servidor; respostas inesperadas identificam o
 status HTTP sem atribuir falhas internas aos dados do titular.
+
+## Atualização do feed
+
+`feed.js` é owner do conteúdo abaixo da saudação. Publicar substitui apenas essa
+região: uma caixa de composição, uma barra de stories e uma lista. Respostas
+antigas de atualização/navegação não podem repor conteúdo nem exibir erro em outra
+página. Regressão: `node --test tests/test_feed_client.js`.
+
+Navegação SPA usa `app.js`: pathname seleciona a tela; query/hash permanecem na
+URL para destinatário e âncora. Entrar em Mensagens pelo menu remove o destinatário
+anterior. Regressão: `node --test tests/test_router_client.js`.

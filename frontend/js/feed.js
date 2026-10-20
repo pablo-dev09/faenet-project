@@ -8,6 +8,7 @@
     'use strict';
 
     const Feed = {
+        views: new WeakMap(),
         /* ===========================================================
          * Compose box
          * =========================================================== */
@@ -644,25 +645,34 @@
             const me = FaeAuth.currentUser;
             if (!me) return;
 
-            await this.renderStories(container);
-            this.renderCompose(container, () => this.renderFeed(container, scope));
+            // Replace only feed-owned content; keep the page's welcome header.
+            this.views.get(container)?.remove();
+            const view = FaeUtils.el('div', { class: 'feed-content' });
+            container.appendChild(view);
+            this.views.set(container, view);
+            const isCurrent = () => this.views.get(container) === view && view.parentNode === container;
+            await this.renderStories(view);
+            if (!isCurrent()) return;
+            this.renderCompose(view, () => this.renderFeed(container, scope));
 
             const skel = FaeUtils.el('div', { class: 'skeleton', style: { height: '160px', marginBottom: '12px' } });
-            container.appendChild(skel);
+            view.appendChild(skel);
 
             try {
                 const posts = await FaeAPI.feed({ scope, limit: 30 });
+                if (!isCurrent()) return;
                 skel.remove();
                 if (!posts.length) {
-                    container.appendChild(FaeUtils.el('div', { class: 'empty' },
+                    view.appendChild(FaeUtils.el('div', { class: 'empty' },
                         scope === 'following'
                             ? 'Nenhuma publicacao ainda. Siga alguem ou crie a primeira!'
                             : 'Nenhuma publicacao no momento.',
                     ));
                 } else {
-                    posts.forEach(p => this.renderPostCard(p, container));
+                    posts.forEach(p => this.renderPostCard(p, view));
                 }
             } catch (e) {
+                if (!isCurrent()) return;
                 skel.remove();
                 FaeUtils.error(e.message);
             }

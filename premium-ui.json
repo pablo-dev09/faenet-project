@@ -1,11 +1,11 @@
 {
   "profile":"product-admin",
-  "sourceRoots":["backend/templates","frontend/js/identity.js","frontend/css/identity.css"],
+  "sourceRoots":["backend/templates","frontend/js/identity.js","frontend/css/identity.css","frontend/js/feed.js","frontend/js/app.js"],
   "locale":"pt-BR",
   "canonicalMap":"UX-CONTRACT.md",
   "requiredCapabilities":["Form","Scrollbar","CRUD"],
   "ownership":{"Form":"authored","Scrollbar":"authored","CRUD":"authored"},
-  "requiredCommands":["unit"],
-  "commands":{"unit":"python -m unittest discover -s tests -v"},
+  "requiredCommands":["unit","client"],
+  "commands":{"unit":"python -m unittest discover -s tests -v","client":"node --test tests/test_identity_client.js tests/test_feed_client.js tests/test_router_client.js"},
   "evidence":{"crudFullFlow":"tests/test_federation.py","failurePaths":"tests/test_federation.py"}
 }

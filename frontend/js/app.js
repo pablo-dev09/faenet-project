@@ -336,12 +336,16 @@
         },
 
         go(path) {
-            if (path === window.location.pathname) {
-                this.route(path);
+            const target = new URL(path, window.location.href);
+            if (target.origin !== window.location.origin) {
+                FaeUtils.error('Este destino não é uma página da FaeNet.');
                 return;
             }
-            history.pushState(null, '', path);
-            this.route(path);
+            const destination = target.pathname + target.search + target.hash;
+            const current = window.location.pathname + window.location.search + window.location.hash;
+            if (destination !== current) history.pushState(null, '', destination);
+            // Query parameters belong to the screen, not the route name.
+            this.route(target.pathname);
         },
 
         refresh() {
