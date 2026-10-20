@@ -3,6 +3,7 @@ import os
 import time
 import unittest
 from urllib.error import HTTPError
+from sqlalchemy import text
 from unittest.mock import patch
 
 os.environ.update(FLASK_ENV='testing',DATABASE_URL='sqlite:///:memory:',SECRET_KEY='isolated-tests-only')
@@ -19,7 +20,9 @@ class FederationTests(unittest.TestCase):
     def setUp(self):
         self.context=app.app_context();self.context.push()
         app.config.update(FAEHUB_LOGIN_REQUIRED=True,FAEHUB_SSO_CLIENT_SECRET='x'*64)
-        db.create_all();self.client=app.test_client()
+        db.create_all()
+        db.session.execute(text('PRAGMA foreign_keys=ON'))
+        self.client=app.test_client()
         self.profile=dict(sub=SUBJECT,name='Pessoa Teste',role='aluno',owner=False,
                           iss='https://faehub-plus.onrender.com',aud='faenet')
         self.mock=patch('backend.services.federation.hub_request',side_effect=self.hub);self.mock.start()
@@ -109,6 +112,21 @@ class FederationTests(unittest.TestCase):
         self.callback()
         self.assertEqual(self.complete(action='create').status_code,303)
         self.assertEqual(User.query.one().name,self.profile['name'])
+
+    def test_new_profile_is_inserted_before_foreign_key_link(self):
+        self.assertEqual(db.session.execute(text('PRAGMA foreign_keys')).scalar_one(),1)
+        self.callback()
+        response=self.complete(action='create')
+        self.assertEqual(response.status_code,303,response.data.decode())
+        self.assertEqual(HubLink.query.one().username,User.query.one().username)
+
+    def test_first_access_prioritizes_creation_and_legacy_is_optional(self):
+        self.callback()
+        html=self.client.get('/auth/faehub/link').data.decode()
+        self.assertLess(html.index('Criar meu perfil FaeNet'),html.index('Usuário antigo'))
+        self.assertIn('<details class="identity-legacy" >',html)
+        response=self.complete(action='link',username='missing',password='wrong',confirmation='on')
+        self.assertIn('<details class="identity-legacy" open>',response.data.decode())
 
     def test_expired_pending_invalid_csrf_and_duplicate_link_preserve_data(self):
         self.callback()

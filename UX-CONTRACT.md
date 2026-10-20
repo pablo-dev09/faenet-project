@@ -36,6 +36,12 @@ voltar restaura estado disponível. A opção criar não apaga registros antigos
 Títulos distinguem entrada e confirmação; navegação mantém rolagem natural no
 celular. Sem menus/data/tabelas novos, não há novo Select/Date para padronizar.
 
+Criação é a ação primária para o primeiro acesso. Campos de conta anterior ficam
+em disclosure nativo, abrem somente por escolha do titular ou erro no vínculo,
+e não são exigidos para criar perfil. O servidor salva o usuário antes do vínculo
+referencial na mesma transação; falha reverte os dois registros. Regressão com
+chaves estrangeiras ativas em `tests/test_federation.py`.
+
 UI é pessimista. Callback usa código opaco de uso único e PKCE; nenhum bearer
 token/segredo entra na URL ou no storage do navegador. A sessão contém só ID
 opaco, e o token fica cifrado no servidor. Usuários sem acesso recebem erro

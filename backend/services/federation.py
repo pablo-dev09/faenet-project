@@ -188,6 +188,9 @@ def link_or_create(fields):
     else:
         raise FederationError('Escolha vincular uma conta antiga ou criar seu perfil.')
     try:
+        # HubLink has a foreign key but no ORM relationship to User. Flush the
+        # parent before adding the link; PostgreSQL checks that FK immediately.
+        db.session.flush()
         link = HubLink(subject=profile['sub'], username=user.username)
         db.session.add(link)
         consumed = db.session.execute(delete(HubPending).where(HubPending.id == pending.id, HubPending.expires_at > int(time.time())))
@@ -195,9 +198,10 @@ def link_or_create(fields):
             db.session.rollback()
             raise FederationError('Confirmação já utilizada. Recomece.', 409)
         db.session.commit()
-    except IntegrityError:
+    except IntegrityError as exc:
         db.session.rollback()
-        raise FederationError('Uma das contas já foi vinculada. Reabra a entrada com FaeHub.', 409) from None
+        current_app.logger.error('FaeHub profile transaction rejected (SQLSTATE=%s)', getattr(exc.orig,'sqlstate','unknown'))
+        raise FederationError('Não foi possível salvar o perfil. Reabra a entrada com FaeHub e tente novamente.', 409) from None
     finish(link, token, profile)
 
 
