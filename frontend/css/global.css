@@ -147,6 +147,9 @@ p { margin: 0 0 0.8em; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--line-soft); }
+/* Same shared palette in standards-based engines and new scroll surfaces. */
+* { scrollbar-color: var(--line) transparent; scrollbar-width: thin; }
+@media (forced-colors: active) { * { scrollbar-color: auto; scrollbar-width: auto; } }
 
 .muted { color: var(--text-muted); }
 .text-soft { color: var(--text-soft); }

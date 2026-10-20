@@ -1,0 +1,13 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Confirmar perfil · FaeNet</title><link rel="stylesheet" href="/css/global.css"><link rel="stylesheet" href="/css/components.css"><link rel="stylesheet" href="/css/experience.css"><link rel="stylesheet" href="/css/identity.css"></head>
+<body><main class="identity-card"><img src="/img/faenet-mark.svg" alt="FaeNet" width="64" height="64">
+{% if pending %}<h1>Seu lugar na FaeNet.</h1><p>{{ profile.name }}, sua conta FaeHub foi confirmada. Escolha como continuar.</p>
+{% else %}<h1>Não foi possível concluir.</h1>{% endif %}
+<p class="identity-error" id="identityError" role="alert">{{ error or '' }}</p>
+{% if pending %}<section><h2>Já tenho uma conta FaeNet</h2><p>Confirme a conta antiga para preservar seu perfil, publicações e mensagens. A senha abaixo é a antiga da FaeNet, não a do FaeHub.</p>
+<form method="post" novalidate data-identity-form><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="link">
+<label class="field">Usuário antigo<input class="field__input" name="username" value="{{ request.form.get('username','') }}" autocomplete="username" required maxlength="60" aria-describedby="identityError"></label>
+<label class="field" for="oldPassword">Senha antiga da FaeNet</label><div class="identity-password"><input class="field__input" id="oldPassword" type="password" name="password" required maxlength="128" autocomplete="current-password" aria-describedby="identityError"><button class="btn btn--ghost" type="button" data-reveal-password aria-label="Mostrar senha" aria-pressed="false">Mostrar</button></div>
+<p><label><input type="checkbox" name="confirmation" required> Confirmo que esta conta é minha e quero passar a acessá-la somente pelo FaeHub.</label></p>
+<button class="btn btn--primary btn--block" type="submit">Vincular minha conta</button></form></section>
+<section><h2>É minha primeira vez na FaeNet</h2><p>Criaremos um perfil novo. Nenhuma conta antiga será apagada ou mesclada.</p><form method="post" novalidate data-identity-form><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="action" value="create"><button class="btn btn--ghost btn--block" type="submit">Criar meu perfil FaeNet</button></form></section>
+{% endif %}<p><a href="/auth/faehub/start">Voltar à entrada com FaeHub</a></p></main><script src="/js/identity.js"></script></body></html>

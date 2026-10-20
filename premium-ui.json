@@ -1,0 +1,11 @@
+{
+  "profile":"product-admin",
+  "sourceRoots":["backend/templates","frontend/js/identity.js","frontend/css/identity.css"],
+  "locale":"pt-BR",
+  "canonicalMap":"UX-CONTRACT.md",
+  "requiredCapabilities":["Form","Scrollbar","CRUD"],
+  "ownership":{"Form":"authored","Scrollbar":"authored","CRUD":"authored"},
+  "requiredCommands":["unit"],
+  "commands":{"unit":"python -m unittest discover -s tests -v"},
+  "evidence":{"crudFullFlow":"tests/test_federation.py","failurePaths":"tests/test_federation.py"}
+}

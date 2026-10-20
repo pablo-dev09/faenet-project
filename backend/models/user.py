@@ -27,7 +27,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(String(256), nullable=False)
 
     # Perfil
-    name = db.Column(String(120), nullable=False)
+    name = db.Column(String(160), nullable=False)
     curso = db.Column(String(80), nullable=True)
     turma = db.Column(String(100), nullable=True)
     bio = db.Column(Text, nullable=True)

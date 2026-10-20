@@ -28,6 +28,7 @@ def _ensure_upload_dirs(app: Flask) -> None:
 
 def _register_blueprints(app: Flask) -> None:
     from .routes.auth import auth_bp
+    from .routes.federation import federation_bp, install_guards
     from .routes.hub import hub_bp
     from .routes.me import me_bp
     from .routes.messages import messages_bp
@@ -41,6 +42,8 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(pages_bp)
     app.register_blueprint(uploads_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(federation_bp)
+    install_guards(app)
     app.register_blueprint(me_bp)
     app.register_blueprint(posts_bp)
     app.register_blueprint(stories_bp)
@@ -132,6 +135,10 @@ def create_app() -> Flask:
     )
     cfg = get_config()
     app.config.from_object(cfg)
+    if (app.config.get('FAEHUB_LOGIN_REQUIRED') and not app.testing
+            and (len(app.config.get('SECRET_KEY', '')) < 32
+                 or app.config['SECRET_KEY'] == 'faenet-dev-secret-change-me')):
+        raise RuntimeError('Configure uma SECRET_KEY privada e estável antes de ativar o acesso FaeHub.')
 
     # Limite de upload do Flask.
     app.config["MAX_CONTENT_LENGTH"] = app.config.get("MAX_UPLOAD_BYTES", 16 * 1024 * 1024)

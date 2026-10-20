@@ -22,6 +22,7 @@
                 opts.body = JSON.stringify(opts.body);
                 opts.headers['Content-Type'] = 'application/json';
             }
+            if (this.csrf) opts.headers['X-FaeNet-CSRF'] = this.csrf;
 
             let response;
             try {

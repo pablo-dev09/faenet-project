@@ -4,6 +4,8 @@
 
 # Variaveis de ambiente
 .env
+.env.*
+!.env.example
 
 # Bancos locais
 *.db
@@ -23,6 +25,7 @@ env/
 ENV/
 .pytest_cache/
 .test_dependencies/
+supabase/.temp/
 
 # Uploads locais (manter estrutura mas ignorar arquivos)
 backend/uploads/avatars/*

@@ -24,10 +24,15 @@
             if (appRoot) appRoot.hidden = false;
 
             // Tenta descobrir a sessao
-            await FaeAuth.bootstrap();
+            try { await FaeAuth.bootstrap(); }
+            catch (_) {
+                const message = document.createElement('p'); message.textContent = 'Não foi possível carregar a entrada. Confira sua conexão e atualize a página.';
+                message.setAttribute('role','alert'); appRoot.replaceChildren(message); return;
+            }
 
             // Lida com o deep-link inicial
             const initialPath = window.location.pathname || '/';
+            FaeAuth.returnTo = initialPath;
             if (initialPath === '/register' && !FaeAuth.isAuthed()) {
                 FaeAuth.renderRegister();
             } else if (initialPath === '/login' && !FaeAuth.isAuthed()) {

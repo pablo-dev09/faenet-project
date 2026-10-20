@@ -61,6 +61,11 @@ class Config:
     # Portal academico aberto pela area FaeHub+ da FaeNet. A URL pode ser
     # sobrescrita no ambiente para apontar a uma instancia local ou de testes.
     FAEHUB_URL = os.getenv("FAEHUB_URL", "https://faehub-plus.onrender.com/")
+    # Explicit cutover: deploy schema/code before setting this to 1.
+    FAEHUB_LOGIN_REQUIRED = os.getenv('FAEHUB_LOGIN_REQUIRED', '0') == '1'
+    FAEHUB_SSO_CLIENT_SECRET = os.getenv('FAEHUB_SSO_CLIENT_SECRET', '')
+    FAEHUB_SSO_ORIGIN = 'https://faehub-plus.onrender.com'
+    FAEHUB_SSO_CALLBACK = 'https://faenet.onrender.com/auth/faehub/callback'
 
     # Banco de dados. Em producao, use o Session Pooler do Supabase.
     SQLALCHEMY_DATABASE_URI = DATABASE_URI
