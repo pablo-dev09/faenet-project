@@ -37,3 +37,28 @@ Verificação: `python -m unittest discover -s tests -v`; testes de integração
 Fluxo navegador local validado em desktop e 390px, sucesso e erro no vínculo,
 logout/reentrada. Confirmar o corte final em `/api/auth/options` e no fluxo real
 somente após importar a configuração privada no Render.
+
+## Perfil escolhido pelo titular — 20/10/2026
+
+O primeiro acesso agora exige @ público (3–30 letras ASCII, números, ponto ou _)
+único sem diferença de maiúsculas, e nome de exibição com nome e sobrenome.
+Avatar, capa, bio (280), curso (80) e turma (100) são opcionais. Informações sociais
+não alteram cadastro, permissões, senha ou autenticador do FaeHub.
+
+`User.username` permanece chave interna imutável para preservar relações; `handle`
+é a identidade pública escolhida. Não mostrar fh_UUID como @. URLs de perfil aceitam
+handle ou ID interno; busca, feed, comentários e mensagens mostram o @ escolhido.
+Nome legado continua reservado para impedir colisão entre os dois identificadores.
+
+Migration `profile_onboarding` acrescenta campos e `profile_images`, sem apagar
+registros. Somente contas fh_UUID que têm vínculo FaeHub ficam incompletas até
+escolher identidade; contas anteriores mantêm o perfil. Sessão incompleta pode ler
+o próprio bootstrap, concluir o perfil ou sair, mas APIs sociais recebem 428.
+Próxima entrada redireciona `/auth/faehub/profile`. Editar perfil reutiliza o fluxo.
+
+Fotos opcionais: servidor aceita JPEG/PNG/WebP decodificados até 5 MB/20MP, remove
+metadados e gera JPEG avatar 320×320/capa 1280×480, máximo 400 KiB cada. Persistem no
+PostgreSQL com RLS/Data API fechada, não no disco temporário do Render. Leitura de
+imagem exige sessão FaeHub válida; rotas API não usam cache compartilhado.
+Testes adicionais: `tests/test_onboarding.py` cobre escolhas, colisão, arquivos,
+quatro perfis, rollback, edição e preservação de posts/seguidores/vínculo.

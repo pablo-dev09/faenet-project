@@ -3,6 +3,9 @@ import secrets
 from flask import Blueprint, current_app, jsonify, redirect, render_template, request, session
 from cryptography.fernet import InvalidToken
 from ..services import federation as sso
+from ..services import onboarding
+from ..extensions import db
+from ..models import User
 
 federation_bp = Blueprint('federation', __name__)
 
@@ -33,6 +36,8 @@ def callback():
         return redirect('/login')
     try:
         pending = sso.callback(request.args)
+        if not pending and not db.session.get(User,session['_user_id']).profile_complete:
+            return redirect('/auth/faehub/profile',code=303)
         return redirect('/auth/faehub/link' if pending else sso.destination(session.pop('hub_next', '/feed')), code=303)
     except (sso.FederationError, InvalidToken) as exc:
         return failure(exc if isinstance(exc, sso.FederationError) else sso.FederationError('Recomece a confirmação.', 401))
@@ -45,7 +50,7 @@ def link():
     error = None
     try:
         if request.method == 'POST':
-            sso.link_or_create(request.form)
+            sso.link_or_create(request.form,request.files)
             return redirect(sso.destination(session.pop('hub_next', '/feed')), code=303)
         _, _, profile = sso.pending_identity()
     except sso.FederationError as exc:
@@ -57,7 +62,26 @@ def link():
         except sso.FederationError as expired:
             return failure(expired)
     return render_template('faehub_identity.html', pending=True, profile=profile,
-                           csrf=session['hub_link_csrf'], error=error.message if error else None), error.status if error else 200
+                           csrf=session['hub_link_csrf'], field_error=error.field if error else None,
+                           error=error.message if error else None), error.status if error else 200
+
+
+@federation_bp.route('/auth/faehub/profile',methods=['GET','POST'])
+def profile_setup():
+    if not sso.required():return redirect('/login')
+    error=None
+    try:
+        sso.validate_session()
+        user=db.session.get(User,session['_user_id'])
+        if request.method=='POST':
+            if not session.get('hub_csrf') or not secrets.compare_digest(session['hub_csrf'],request.form.get('csrf','')):
+                raise sso.FederationError('Sessão expirada. Reabra a entrada com FaeHub.',403)
+            onboarding.complete_existing(user,request.form,request.files)
+            return redirect(sso.destination(session.pop('hub_next','/feed')),code=303)
+    except sso.FederationError as exc:return failure(exc)
+    except onboarding.ProfileError as exc:error=exc
+    return render_template('faehub_identity.html',pending=True,editing=True,profile=user,
+        csrf=session['hub_csrf'],field_error=error.field if error else None,error=error.message if error else None), error.status if error else 200
 
 
 def install_guards(app):
@@ -83,6 +107,9 @@ def install_guards(app):
             if exc.status == 401:
                 sso.logout()
             return jsonify(ok=False, error=dict(message=exc.message)), exc.status
+        user=db.session.get(User,session['_user_id'])
+        if not user.profile_complete and not (request.path=='/api/me' and request.method=='GET'):
+            return jsonify(ok=False,error=dict(message='Escolha seu @ e conclua seu perfil para continuar.',code='profile_setup_required')),428
 
     @app.after_request
     def privacy(response):

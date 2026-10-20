@@ -24,7 +24,7 @@ retenção de publicações neste fluxo. Não inventar termos legais.
 |---|---|---|---|
 | Entrar com FaeHub | CTA ocupado | FaeHub, depois destino interno validado | erro acionável / tentar novamente |
 | Vincular conta antiga | botão único ocupado | feed/destino, perfil preservado | username preservado, senha limpa, erro no topo |
-| Criar perfil | envio único | feed/destino | nenhum vínculo parcial, recomeçar |
+| Criar/editar perfil | duas etapas, prévia, envio único | feed/destino, identidade escolhida | texto/fotos mantidos no DOM, erro associado, corrigir sem reiniciar |
 | Conta bloqueada / senha alterada | revalidação no servidor | nenhuma liberação indevida | 401 e nova confirmação |
 | FaeHub fora do ar | não fornecer dados protegidos | revalidar depois | 503, sem login local como atalho |
 
@@ -61,3 +61,22 @@ Auditoria estática: `affordance.actionless-button` no controle de revelar senha
 Mostrar → Ocultar e aria-pressed. Não inserir JavaScript inline só para satisfazer
 esse detector. Demais regras estáticas foram verificadas; não confundir esse
 resultado com certificação integral de acessibilidade.
+
+## Configuração do perfil — 20/10/2026
+
+Fonte: `docs/faehub-sso.md`, solicitação do proprietário por @, nome, foto e bio
+escolhidos. Owner `identity.js` também controla Continuar, Voltar e Remover seleção
+(a mesma limitação estática acima afeta esses botões). A etapa 1 exige @ disponível
+e nome/sobrenome; a 2 oferece avatar, capa, bio, curso e turma opcionais. A prévia
+usa textContent e object URLs revogados; fotos não são enviadas antes de concluir.
+JPG/PNG/WebP até 5 MB e 20MP; servidor decodifica, remove metadados e reduz dimensões.
+Formulário nativo sem JS continua utilizável com ambas as etapas visíveis.
+
+Navegação entre etapas preserva campos e fotos. Erro de validação foca o campo,
+reabre a etapa e não consome tentativas de vinculação. Submit usa FormData com
+timeout de 30s e bloqueio de duplicação; falha preserva o DOM, conclusão incerta
+orienta reabrir a entrada. Upload é uma única operação limitada, com estado ocupado
+indeterminado (sem percentual fictício); remover seleção/corrigir permite reenviar.
+Saída da página com rascunho usa beforeunload; nenhum dado vai para localStorage.
+Contas automáticas incompletas recebem configuração obrigatória, não um novo perfil.
+Prévia é variante expressiva do tema existente; tokens, permissões e senha não mudam.

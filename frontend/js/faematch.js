@@ -266,7 +266,7 @@
             const query = this.filters.query.trim().toLowerCase();
             return this.people.filter((user, index) => {
                 const profile = this.profileFor(user, index);
-                const haystack = [user.name, user.username, user.curso, user.turma, user.bio, ...profile.skills, ...profile.interests].join(' ').toLowerCase();
+                const haystack = [user.name, FaeUtils.userHandle(user), user.curso, user.turma, user.bio, ...profile.skills, ...profile.interests].join(' ').toLowerCase();
                 if (connectedOnly && !this.connected.has(user.username)) return false;
                 if (query && !haystack.includes(query)) return false;
                 if (this.filters.curso && !(user.curso || '').toLowerCase().includes(this.filters.curso.toLowerCase())) return false;
@@ -376,7 +376,7 @@
                 FaeUtils.info('Este é um perfil de demonstração do FaeMatch.');
                 return;
             }
-            FaeApp.go(`/profile/${user.username}`);
+            FaeApp.go(FaeUtils.profilePath(user));
         },
 
         renderProjects(container) {

@@ -58,8 +58,11 @@ a nomes em português. Não converter nomes fornecidos pelo titular em HTML.
 
 ## Layout
 
-Login preserva foto e painel já existentes. A confirmação de perfil usa coluna
-até 36rem, margem móvel de 1rem e rolagem natural: nenhum campo ou ação é cortado.
+Login preserva foto e painel já existentes. Configuração de perfil usa até 65rem:
+formulário em duas etapas à esquerda e prévia pessoal à direita. A prévia mostra
+a identidade escolhida, sem parecer outro formulário. Abaixo de 800px, as colunas
+empilham; margem móvel de 1rem e rolagem natural mantêm todos os campos acessíveis.
+Erros simples de entrada continuam em cartão até 36rem.
 
 ## Elevation & Depth
 
@@ -78,7 +81,10 @@ reutiliza campos e controles e é confirmada por checkbox com consequência expl
 `identity.js` é owner comportamental dos formulários server-rendered de identidade;
 `auth.js` permanece owner da entrada SPA. Erros inline reservam espaço, senhas
 mascaradas têm revelação acessível; submit duplicado é impedido e BFCache restaura
-controles. Não usar confirmação nativa do navegador. Movimento decorativo segue
+controles. Não usar popup nativo para decisões de produto. O aviso de saída com
+rascunho não salvo usa o evento de ciclo de página beforeunload, sem window.confirm.
+Upload usa seletor nativo com label estilizado, nome/tamanho, remoção da seleção e
+prévia segura. Movimento decorativo segue
 o tema existente e sua redução de movimento.
 
 ## Do's and Don'ts

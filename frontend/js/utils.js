@@ -8,6 +8,8 @@
     'use strict';
 
     const Utils = {
+        userHandle(user) { return user?.handle || (user?.profile_complete === false ? 'perfil.em.configuracao' : user?.username || ''); },
+        profilePath(user) { return '/profile/' + encodeURIComponent(user.handle || user.username); },
         /* ---- DOM helpers ---- */
         el(tag, attrs = {}, ...children) {
             const node = document.createElement(tag);
@@ -175,7 +177,7 @@
             const cls = 'avatar' + (size ? ` avatar--${size}` : '') + (user && user.online ? ' avatar--online' : '');
             const a = this.el('div', { class: cls }, (user && this.initials(user.name || user.username, user.avatar_text)) || 'FN');
             if (user && user.avatar_img) {
-                const img = this.el('img', { src: user.avatar_img, alt: user.username || '' });
+                const img = this.el('img', { src: user.avatar_img, alt: user.name || this.userHandle(user) });
                 a.appendChild(img);
             }
             return a;
@@ -183,14 +185,14 @@
 
         userLink(user, extraClass = '') {
             return this.el('a', {
-                href: `/profile/${user.username}`,
+                href: this.profilePath(user),
                 class: `user-card ${extraClass || ''}`,
                 'data-link': true,
             },
                 this.avatarNode(user, 'sm'),
                 this.el('div', { class: 'user-card__info' },
                     this.el('div', { class: 'user-card__name' }, user.name || user.username),
-                    this.el('div', { class: 'user-card__username' }, `@${user.username}`),
+                    this.el('div', { class: 'user-card__username' }, `@${this.userHandle(user)}`),
                 ),
             );
         },

@@ -20,8 +20,8 @@ from ..models import User, HubLink, HubSession, HubFlow, HubPending
 
 
 class FederationError(Exception):
-    def __init__(self, message, status=400):
-        self.message, self.status = message, status
+    def __init__(self, message, status=400, field=None):
+        self.message, self.status, self.field = message, status, field
         super().__init__(message)
 
 
@@ -151,17 +151,17 @@ def pending_identity():
     return pending, token, profile
 
 
-def link_or_create(fields):
+def link_or_create(fields, files=None):
     if not secrets.compare_digest(session.get('hub_link_csrf', ''), fields.get('csrf', '')) or not session.get('hub_link_csrf'):
         raise FederationError('Sessão expirada. Reabra a entrada com FaeHub.', 403)
     pending, token, profile = pending_identity()
-    # Persist attempts even when a password is rejected. No business writes yet.
-    count = db.session.execute(update(HubPending).where(HubPending.id == pending.id, HubPending.attempts < 5)
-                               .values(attempts=HubPending.attempts + 1))
-    db.session.commit()
-    if count.rowcount != 1:
-        raise FederationError('Muitas tentativas. Recomece a confirmação.', 429)
     if fields.get('action') == 'link':
+        # Limit ownership-proof attempts, not harmless profile-field corrections.
+        count = db.session.execute(update(HubPending).where(HubPending.id == pending.id, HubPending.attempts < 5)
+                                   .values(attempts=HubPending.attempts + 1))
+        db.session.commit()
+        if count.rowcount != 1:
+            raise FederationError('Muitas tentativas. Recomece a confirmação.', 429)
         if fields.get('confirmation') != 'on':
             raise FederationError('Confirme que a conta antiga é sua antes de vinculá-la.', 403)
         username, password = fields.get('username','').strip().lower(), fields.get('password','')
@@ -183,7 +183,12 @@ def link_or_create(fields):
         if db.session.query(HubLink).filter_by(username=user.username).first():
             raise FederationError('Essa conta já está vinculada. Entre com a conta FaeHub correspondente.', 409)
     elif fields.get('action') == 'create':
+        from . import onboarding
+        try:values,images=onboarding.validate(fields,files)
+        except onboarding.ProfileError as exc:
+            raise FederationError(exc.message,exc.status,exc.field) from None
         user = User(username='fh_' + profile['sub'].replace('-', ''), name=profile['name'], password_hash='!faehub-only')
+        user.handle=values['handle']
         db.session.add(user)
     else:
         raise FederationError('Escolha vincular uma conta antiga ou criar seu perfil.')
@@ -191,6 +196,9 @@ def link_or_create(fields):
         # HubLink has a foreign key but no ORM relationship to User. Flush the
         # parent before adding the link; PostgreSQL checks that FK immediately.
         db.session.flush()
+        if fields.get('action') == 'create':
+            onboarding.apply(user,values,images)
+            db.session.flush()
         link = HubLink(subject=profile['sub'], username=user.username)
         db.session.add(link)
         consumed = db.session.execute(delete(HubPending).where(HubPending.id == pending.id, HubPending.expires_at > int(time.time())))
@@ -201,6 +209,8 @@ def link_or_create(fields):
     except IntegrityError as exc:
         db.session.rollback()
         current_app.logger.error('FaeHub profile transaction rejected (SQLSTATE=%s)', getattr(exc.orig,'sqlstate','unknown'))
+        if fields.get('action')=='create':
+            raise FederationError('Este @ acabou de ser escolhido. Escolha outro ou reabra a entrada com FaeHub.',409,'handle') from None
         raise FederationError('Não foi possível salvar o perfil. Reabra a entrada com FaeHub e tente novamente.', 409) from None
     finish(link, token, profile)
 

@@ -82,12 +82,12 @@
         },
 
         renderUserCard(user) {
-            const card = FaeUtils.el('a', { href: `/profile/${user.username}`, 'data-link': true, class: 'card card--hover flex gap-2 mb-1' },
+            const card = FaeUtils.el('a', { href: FaeUtils.profilePath(user), 'data-link': true, class: 'card card--hover flex gap-2 mb-1' },
                 FaeUtils.avatarNode(user, 'sm'),
                 FaeUtils.el('div', { class: 'flex-1' },
                     FaeUtils.el('div', { style: { fontWeight: 600 } }, user.name || user.username),
                     FaeUtils.el('div', { class: 'muted text-xs' },
-                        `@${user.username}` + (user.curso ? ` · ${user.curso}` : '') + (user.turma ? ` · ${user.turma}` : ''),
+                        `@${FaeUtils.userHandle(user)}` + (user.curso ? ` · ${user.curso}` : '') + (user.turma ? ` · ${user.turma}` : ''),
                     ),
                     user.bio ? FaeUtils.el('div', { class: 'text-sm text-soft mt-1' }, user.bio) : null,
                 ),

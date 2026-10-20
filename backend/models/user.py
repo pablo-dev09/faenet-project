@@ -24,6 +24,9 @@ class User(UserMixin, db.Model):
 
     # Identidade
     username = db.Column(String(60), primary_key=True)
+    # Immutable username remains the relational key; handle is the chosen public @.
+    handle = db.Column(String(60), unique=True, nullable=True)
+    profile_complete = db.Column(Boolean, default=True, nullable=False)
     password_hash = db.Column(String(256), nullable=False)
 
     # Perfil
@@ -142,6 +145,8 @@ class User(UserMixin, db.Model):
             }
         return {
             "username": self.username,
+            "handle": self.handle or (None if not self.profile_complete else self.username),
+            "profile_complete": bool(self.profile_complete),
             "name": self.name,
             "curso": self.curso,
             "turma": self.turma,

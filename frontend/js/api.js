@@ -41,6 +41,9 @@
             }
 
             if (!response.ok || (data && data.ok === false)) {
+                if (response.status === 428 && data?.error?.code === 'profile_setup_required') {
+                    window.location.assign('/auth/faehub/profile');
+                }
                 const message = (data && data.error && data.error.message) || `Erro ${response.status}`;
                 const error = new Error(message);
                 error.status = response.status;

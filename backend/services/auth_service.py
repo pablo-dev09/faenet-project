@@ -48,11 +48,13 @@ def register_user(
     if not name:
         raise AuthError("Informe seu nome completo.", 400)
 
-    if User.query.get(username):
+    from .onboarding import find_user
+    if find_user(username):
         raise AuthError("Esse nome de usuario ja esta em uso.", 409)
 
     user = User(
         username=username,
+        handle=username,
         name=name,
         curso=(sanitize_text(curso) or None) if curso else None,
         turma=(sanitize_text(turma) or None) if turma else None,

@@ -41,6 +41,9 @@ class FederationTests(unittest.TestCase):
         return self.client.get('/auth/faehub/callback',query_string=dict(state=state,code='c'*43,iss=self.profile['iss']))
 
     def complete(self,**data):
+        if data.get('action')=='create':
+            data.setdefault('handle','pessoa.teste')
+            data.setdefault('name',self.profile['name'])
         with self.client.session_transaction() as session:csrf=session['hub_link_csrf']
         return self.client.post('/auth/faehub/link',data=dict(csrf=csrf,**data))
 

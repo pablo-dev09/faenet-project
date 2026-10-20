@@ -213,7 +213,7 @@
                     FaeUtils.el('div', { class: 'story-ring' + (s.viewed_by_me ? ' story-ring--seen' : '') },
                         FaeUtils.avatarNode(s.author, 'sm'),
                     ),
-                    FaeUtils.el('span', { class: 'story__label' }, s.author ? s.author.username : ''),
+                    FaeUtils.el('span', { class: 'story__label' }, s.author ? FaeUtils.userHandle(s.author) : ''),
                 );
                 bar.appendChild(btn);
             });
@@ -297,7 +297,7 @@
                 header.appendChild(FaeUtils.avatarNode(s.author, 'sm'));
                 header.appendChild(FaeUtils.el('div', {},
                     FaeUtils.el('div', { style: { fontWeight: 600 } }, s.author ? s.author.name : ''),
-                    FaeUtils.el('div', { style: { fontSize: '12px', color: 'rgba(255,255,255,0.6)' } }, `@${s.author ? s.author.username : ''}`),
+                    FaeUtils.el('div', { style: { fontSize: '12px', color: 'rgba(255,255,255,0.6)' } }, `@${s.author ? FaeUtils.userHandle(s.author) : ''}`),
                 ));
                 if (s.username === FaeAuth.currentUser.username) {
                     const delBtn = FaeUtils.el('button', {
@@ -363,15 +363,15 @@
 
             // Header
             const header = FaeUtils.el('div', { class: 'post__header' });
-            header.appendChild(FaeUtils.el('a', { href: `/profile/${author.username}`, 'data-link': true, class: 'flex' },
+            header.appendChild(FaeUtils.el('a', { href: FaeUtils.profilePath(author), 'data-link': true, class: 'flex' },
                 FaeUtils.avatarNode(author, 'sm'),
             ));
             header.appendChild(FaeUtils.el('div', { class: 'post__user' },
                 FaeUtils.el('div', { class: 'post__name' },
-                    FaeUtils.el('a', { href: `/profile/${author.username}`, 'data-link': true, style: { color: 'inherit' } }, author.name || author.username),
+                    FaeUtils.el('a', { href: FaeUtils.profilePath(author), 'data-link': true, style: { color: 'inherit' } }, author.name || author.username),
                 ),
                 FaeUtils.el('div', { class: 'post__meta' },
-                    `@${author.username}`,
+                    `@${FaeUtils.userHandle(author)}`,
                     author.curso ? ` · ${author.curso}` : '',
                     author.turma ? ` · ${author.turma}` : '',
                     ' · ',
@@ -400,7 +400,7 @@
                 dropdown.appendChild(FaeUtils.el('button', {
                     class: 'post__menu-item',
                     onclick: () => {
-                        const url = `${window.location.origin}/profile/${post.username}`;
+                        const url = window.location.origin + FaeUtils.profilePath(author);
                         navigator.clipboard?.writeText(url);
                         FaeUtils.info('Link copiado.');
                     },
@@ -626,7 +626,7 @@
 
         renderCommentNode(c) {
             return FaeUtils.el('div', { class: 'comment' },
-                FaeUtils.el('a', { href: `/profile/${c.username}`, 'data-link': true },
+                FaeUtils.el('a', { href: FaeUtils.profilePath(c.author || {username:c.username}), 'data-link': true },
                     FaeUtils.avatarNode(c.author, 'xs'),
                 ),
                 FaeUtils.el('div', { class: 'comment__body' },
