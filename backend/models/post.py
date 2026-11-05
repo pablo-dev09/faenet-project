@@ -92,7 +92,22 @@ class Post(db.Model):
             self.poll_json = json.dumps(value)
 
     # --- Serializacao ---
-    def to_dict(self, current_user: str | None = None) -> dict:
+    def to_dict(self, current_user: str | None = None, *, relations: dict | None = None) -> dict:
+        # List endpoints supply request-local aggregates, not entire user/comment lists.
+        if relations is None:
+            relations = {
+                "likes_count": len(self.liked_by),
+                "saves_count": len(self.saved_by),
+                "reposts_count": len(self.reposted_by),
+                "comments_count": len(self.comments),
+                "author": self.author.to_public_dict() if self.author else None,
+            }
+            if current_user:
+                relations.update(
+                    liked_by_me=any(u.username == current_user for u in self.liked_by),
+                    saved_by_me=any(u.username == current_user for u in self.saved_by),
+                    reposted_by_me=any(u.username == current_user for u in self.reposted_by),
+                )
         data = {
             "id": self.id,
             "username": self.username,
@@ -102,16 +117,8 @@ class Post(db.Model):
             "repost_of": self.repost_of,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "edited": bool(self.edited),
-            "likes_count": len(self.liked_by) if self.liked_by is not None else 0,
-            "saves_count": len(self.saved_by) if self.saved_by is not None else 0,
-            "reposts_count": len(self.reposted_by) if self.reposted_by is not None else 0,
-            "comments_count": len(self.comments) if self.comments is not None else 0,
-            "author": self.author.to_public_dict() if self.author else None,
+            **relations,
         }
-        if current_user:
-            data["liked_by_me"] = any(u.username == current_user for u in self.liked_by) if self.liked_by else False
-            data["saved_by_me"] = any(u.username == current_user for u in self.saved_by) if self.saved_by else False
-            data["reposted_by_me"] = any(u.username == current_user for u in self.reposted_by) if self.reposted_by else False
         return data
 
     def __repr__(self) -> str:  # pragma: no cover
@@ -132,14 +139,14 @@ class Comment(db.Model):
     post = relationship("Post", back_populates="comments")
     author = relationship("User", back_populates="comments", foreign_keys=[username])
 
-    def to_dict(self) -> dict:
+    def to_dict(self, *, author_data: dict | None = None) -> dict:
         return {
             "id": self.id,
             "post_id": self.post_id,
             "username": self.username,
             "content": self.content,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
-            "author": self.author.to_public_dict() if self.author else None,
+            "author": author_data if author_data is not None else (self.author.to_public_dict() if self.author else None),
         }
 
     def __repr__(self) -> str:  # pragma: no cover

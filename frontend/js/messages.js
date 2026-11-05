@@ -50,7 +50,7 @@
                 let convs = [];
                 try { convs = await FaeAPI.conversations(); } catch (e) { FaeUtils.error(e.message); return; }
                 const filter = (search.value || '').toLowerCase();
-                const visibleConversations = convs.filter(c => !filter || (c.with && (c.with.username.toLowerCase().includes(filter) || (c.with.name || '').toLowerCase().includes(filter))));
+                const visibleConversations = convs.filter(c => !filter || (c.with && (FaeUtils.userHandle(c.with).toLowerCase().includes(filter) || (c.with.name || '').toLowerCase().includes(filter))));
 
                 if (!showContacts) {
                     visibleConversations.forEach(c => {
@@ -166,7 +166,7 @@
                     FaeUtils.avatarNode(otherProfile, 'sm'),
                     FaeUtils.el('div', {},
                         FaeUtils.el('div', { style: { fontWeight: 600 } },
-                            FaeUtils.el('a', { href: `/profile/${username}`, 'data-link': true, style: { color: 'inherit' } }, otherProfile.name || otherProfile.username),
+                            FaeUtils.el('a', { href: FaeUtils.profilePath(otherProfile), 'data-link': true, style: { color: 'inherit' } }, otherProfile.name || FaeUtils.userHandle(otherProfile)),
                         ),
                         FaeUtils.el('div', { class: 'chat__thread-status' + (otherProfile.online ? ' is-online' : '') },
                             otherProfile.online ? 'Online' : 'Visto por ultimo ' + FaeUtils.timeAgo(otherProfile.last_seen),

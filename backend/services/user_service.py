@@ -5,11 +5,14 @@ Busca, perfil, seguir/deixar de seguir e atualizacao do proprio perfil.
 """
 
 from datetime import datetime
+import json
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 
 from ..extensions import db
 from ..models import User, followers
+from .serialization import serialize_users
+from .onboarding import find_user
 from ..utils.security import (
     MAX_BIO_LEN,
     MAX_NAME_LEN,
@@ -33,6 +36,7 @@ def search_users(viewer: User, query: str, limit: int = 20) -> list[dict]:
         User.query.filter(
             or_(
                 db.func.lower(User.username).like(like),
+                db.func.lower(User.handle).like(like),
                 db.func.lower(User.name).like(like),
                 db.func.lower(User.curso).like(like),
             )
@@ -41,16 +45,18 @@ def search_users(viewer: User, query: str, limit: int = 20) -> list[dict]:
         .limit(max(1, min(limit, 50)))
         .all()
     )
-    return [u.to_public_dict() for u in users]
+    return serialize_users(users)
 
 
 def get_profile(viewer: User | None, username: str) -> dict:
-    user = User.query.get(username.lower() if username else "")
+    user = find_user(username)
     if not user:
         raise UserError("Usuario nao encontrado.", 404)
     data = user.to_public_dict()
     if viewer:
-        data["is_following"] = any(u.username == viewer.username for u in user.followers) if user.followers else False
+        data["is_following"] = db.session.execute(select(followers.c.follower_id).where(
+            followers.c.follower_id == viewer.username, followers.c.followed_id == user.username
+        )).first() is not None
         data["is_me"] = viewer.username == user.username
     else:
         data["is_following"] = False
@@ -59,7 +65,7 @@ def get_profile(viewer: User | None, username: str) -> dict:
 
 
 def follow_user(viewer: User, username: str) -> dict:
-    target = User.query.get(username.lower() if username else "")
+    target = find_user(username)
     if not target:
         raise UserError("Usuario nao encontrado.", 404)
     if target.username == viewer.username:
@@ -79,12 +85,12 @@ def follow_user(viewer: User, username: str) -> dict:
     from ..models import Notification
     n = Notification(
         to_user=target.username,
-        from_name=viewer.name,
+        from_name=viewer.name[:120],
         from_avatar_text=viewer.avatar_initials(),
         from_avatar_img=viewer.avatar_img,
         notif_type="follow",
-        text=f"{viewer.name} comecou a seguir voce",
-        meta_json=None,
+        text=f"{viewer.name} comecou a seguir voce"[:200],
+        meta_json=json.dumps(dict(username=viewer.username)),
     )
     db.session.add(n)
     db.session.commit()
@@ -92,7 +98,7 @@ def follow_user(viewer: User, username: str) -> dict:
 
 
 def unfollow_user(viewer: User, username: str) -> dict:
-    target = User.query.get(username.lower() if username else "")
+    target = find_user(username)
     if not target:
         raise UserError("Usuario nao encontrado.", 404)
     db.session.execute(
@@ -138,29 +144,28 @@ def update_profile(*, viewer: User, fields: dict) -> dict:
 
 def suggest_users(viewer: User, limit: int = 8) -> list[dict]:
     """Sugere usuarios para seguir: exclui o proprio usuario e quem ja segue."""
-    following_ids = {u.username for u in viewer.followed} if viewer.followed else set()
-    following_ids.add(viewer.username)
+    following_ids = select(followers.c.followed_id).where(followers.c.follower_id == viewer.username)
     users = (
-        User.query.filter(~User.username.in_(following_ids))
+        User.query.filter(User.username != viewer.username, ~User.username.in_(following_ids))
         .order_by(User.joined.desc())
         .limit(max(1, min(limit, 30)))
         .all()
     )
-    return [u.to_public_dict() for u in users]
+    return serialize_users(users)
 
 
 def list_followers(viewer: User | None, username: str) -> list[dict]:
-    user = User.query.get(username.lower() if username else "")
+    user = find_user(username)
     if not user:
         raise UserError("Usuario nao encontrado.", 404)
-    return [u.to_public_dict() for u in user.followers] if user.followers else []
+    return serialize_users(user.followers)
 
 
 def list_following(viewer: User | None, username: str) -> list[dict]:
-    user = User.query.get(username.lower() if username else "")
+    user = find_user(username)
     if not user:
         raise UserError("Usuario nao encontrado.", 404)
-    return [u.to_public_dict() for u in user.followed] if user.followed else []
+    return serialize_users(user.followed)
 
 
 def list_online_users(limit: int = 30) -> list[dict]:
@@ -170,4 +175,4 @@ def list_online_users(limit: int = 30) -> list[dict]:
         .limit(max(1, min(limit, 100)))
         .all()
     )
-    return [u.to_public_dict() for u in users]
+    return serialize_users(users)

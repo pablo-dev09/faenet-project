@@ -24,6 +24,9 @@
     --r-xl: 22px;
 }
 
+/* The shared button display must not override the semantic hidden attribute. */
+.auth--login .auth__form [hidden]{display:none}
+
 body {
     background:
         radial-gradient(750px 520px at 11% 15%, rgba(31, 98, 255, 0.18), transparent 62%),

@@ -56,7 +56,12 @@
             item.addEventListener('click', async () => {
                 try { await FaeAPI.markNotificationRead(n.id); item.classList.remove('notif--unread'); } catch (e) {}
                 if (n.type === 'follow' || n.type === 'like' || n.type === 'comment') {
-                    window.FaeApp.go('/profile/' + (n.from_name || '').toLowerCase().replace(/\s+/g, '.'));
+                    if (n.meta?.username) {
+                        try {
+                            const actor = await FaeAPI.profile(n.meta.username);
+                            window.FaeApp.go(FaeUtils.profilePath(actor));
+                        } catch (e) { FaeUtils.error(e.message); }
+                    } else FaeUtils.info('Esta notificação antiga não possui um perfil vinculado.');
                 } else if (n.type === 'message') {
                     window.FaeApp.go('/messages');
                 }

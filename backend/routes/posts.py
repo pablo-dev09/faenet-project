@@ -42,7 +42,7 @@ def create():
         )
     except post_service.PostError as exc:
         return fail(exc.message, exc.status)
-    return ok(post.to_dict(current_user=current_user.username), 201)
+    return ok(post_service.serialize_posts([post], current_user, include_original=False)[0], 201)
 
 
 @posts_bp.route("/<post_id>", methods=["DELETE"])
@@ -58,10 +58,10 @@ def delete(post_id: str):
 @posts_bp.route("/<post_id>", methods=["GET"])
 @login_required
 def detail(post_id: str):
-    post = post_service.Post.query.get(post_id)
-    if not post:
-        return fail("Publicacao nao encontrada.", 404)
-    return ok(post.to_dict(current_user=current_user.username))
+    try:
+        return ok(post_service.get_post(current_user, post_id))
+    except post_service.PostError as exc:
+        return fail(exc.message, exc.status)
 
 
 @posts_bp.route("/<post_id>/like", methods=["POST"])

@@ -4,6 +4,8 @@
 
 # Variaveis de ambiente
 .env
+.env.*
+!.env.example
 
 # Bancos locais
 *.db
@@ -22,6 +24,8 @@ venv/
 env/
 ENV/
 .pytest_cache/
+.test_dependencies/
+supabase/.temp/
 
 # Uploads locais (manter estrutura mas ignorar arquivos)
 backend/uploads/avatars/*
@@ -70,4 +74,8 @@ after_manual_login.png
 # venv local
 .venv/
 venv/
+
+# Artefatos temporarios de trabalho (renders de documentacao, inspecoes)
+# O PDF final da documentacao vive em docs/.
+tmp/
 

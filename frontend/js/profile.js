@@ -13,7 +13,7 @@
             if (!me) return;
 
             const targetUsername = username || me.username;
-            const isMe = targetUsername === me.username;
+            let isMe = targetUsername === me.username;
 
             const skel = FaeUtils.el('div', { class: 'skeleton', style: { height: '200px', marginBottom: '16px' } });
             container.appendChild(skel);
@@ -21,6 +21,7 @@
             let profile;
             try {
                 profile = await FaeAPI.profile(targetUsername);
+                isMe = profile.username === me.username;
             } catch (e) {
                 skel.remove();
                 FaeUtils.error(e.message);
@@ -55,7 +56,7 @@
             main.appendChild(avWrap);
 
             main.appendChild(FaeUtils.el('h1', { class: 'profile__name' }, profile.name || profile.username));
-            main.appendChild(FaeUtils.el('div', { class: 'profile__username' }, `@${profile.username}`));
+            main.appendChild(FaeUtils.el('div', { class: 'profile__username' }, `@${FaeUtils.userHandle(profile)}`));
 
             if (profile.bio) main.appendChild(FaeUtils.el('div', { class: 'profile__bio' }, profile.bio));
 
@@ -145,11 +146,11 @@
                         return;
                     }
                     list.forEach(u => {
-                        const card = FaeUtils.el('a', { href: `/profile/${u.username}`, 'data-link': true, class: 'card card--hover flex gap-2 mb-1' },
+                        const card = FaeUtils.el('a', { href: FaeUtils.profilePath(u), 'data-link': true, class: 'card card--hover flex gap-2 mb-1' },
                             FaeUtils.avatarNode(u, 'sm'),
                             FaeUtils.el('div', { class: 'flex-1' },
                                 FaeUtils.el('div', { style: { fontWeight: 600 } }, u.name || u.username),
-                                FaeUtils.el('div', { class: 'muted text-xs' }, `@${u.username}` + (u.curso ? ` · ${u.curso}` : '')),
+                                FaeUtils.el('div', { class: 'muted text-xs' }, `@${FaeUtils.userHandle(u)}` + (u.curso ? ` · ${u.curso}` : '')),
                             ),
                         );
                         const btn = FaeUtils.followButton(u, FaeAuth.currentUser, kind === 'following');
@@ -191,6 +192,7 @@
         },
 
         async editProfile(profile) {
+            if(FaeAuth.hubOnly){window.location.assign('/auth/faehub/profile');return;}
             const form = FaeUtils.el('form', {},
                 FaeUtils.el('div', { class: 'field' },
                     FaeUtils.el('span', { class: 'field__label' }, 'Nome completo'),
@@ -230,6 +232,7 @@
         },
 
         async editAvatar(avatarEl, profile) {
+            if(FaeAuth.hubOnly){window.location.assign('/auth/faehub/profile');return;}
             const fileInput = FaeUtils.el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp' });
             const preview = FaeUtils.el('div', { class: 'muted' }, 'Selecione uma imagem para o avatar.');
             let dataUrl = null;
@@ -264,6 +267,7 @@
         },
 
         async editBanner(bannerEl, profile) {
+            if(FaeAuth.hubOnly){window.location.assign('/auth/faehub/profile');return;}
             const fileInput = FaeUtils.el('input', { type: 'file', accept: 'image/*' });
             const preview = FaeUtils.el('div', { class: 'muted' }, 'Selecione uma imagem (PNG, JPG, WEBP ou GIF).');
             let dataUrl = null;

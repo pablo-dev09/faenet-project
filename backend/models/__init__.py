@@ -8,6 +8,8 @@ responsabilidades e facilitar manutencao.
 
 from .user import User
 from .avatar import UserAvatar
+from .profile_image import ProfileImage
+from .federation import HubLink, HubSession, HubFlow, HubPending, HubLinkAttempt
 from .post import Post, Comment
 from .story import Story
 from .message import Message

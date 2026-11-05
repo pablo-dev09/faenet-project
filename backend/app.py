@@ -29,6 +29,7 @@ def _ensure_upload_dirs(app: Flask) -> None:
 def _register_blueprints(app: Flask) -> None:
     from .routes.auth import auth_bp
     from .routes.avatars import avatars_bp
+    from .routes.federation import federation_bp, install_guards
     from .routes.hub import hub_bp
     from .routes.me import me_bp
     from .routes.messages import messages_bp
@@ -43,6 +44,8 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(uploads_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(avatars_bp)
+    app.register_blueprint(federation_bp)
+    install_guards(app)
     app.register_blueprint(me_bp)
     app.register_blueprint(posts_bp)
     app.register_blueprint(stories_bp)
@@ -86,15 +89,14 @@ def _register_error_handlers(app: Flask) -> None:
         """Mensagem amigavel quando o banco nao esta acessivel.
 
         Causas comuns:
-          - Banco SQLite nao criado (rode ``flask --app backend.app init-db``)
           - ``DATABASE_URL`` apontando para URL invalida
-          - PostgreSQL em producao sem tabelas
+          - Senha ou conexao do Supabase invalida
         """
         app.logger.error("Falha ao acessar o banco: %s", e)
         return jsonify({
             "ok": False,
             "error": {
-                "message": "Banco de dados indisponivel. Rode 'flask --app backend.app init-db' e 'flask --app backend.app seed-demo'.",
+                "message": "Banco de dados indisponivel. Verifique a conexao configurada para o Supabase.",
                 "code": "db_unavailable",
             }
         }), 503
@@ -153,6 +155,10 @@ def create_app() -> Flask:
     )
     cfg = get_config()
     app.config.from_object(cfg)
+    if (app.config.get('FAEHUB_LOGIN_REQUIRED') and not app.testing
+            and (len(app.config.get('SECRET_KEY', '')) < 32
+                 or app.config['SECRET_KEY'] == 'faenet-dev-secret-change-me')):
+        raise RuntimeError('Configure uma SECRET_KEY privada e estável antes de ativar o acesso FaeHub.')
 
     # Limite de upload do Flask.
     app.config["MAX_CONTENT_LENGTH"] = app.config.get("MAX_UPLOAD_BYTES", 16 * 1024 * 1024)
@@ -167,12 +173,23 @@ def create_app() -> Flask:
     _register_shell_context(app)
     _register_cli(app)
 
+    @app.get("/healthz")
+    def healthz():
+        """Health check do Render, incluindo acesso ao PostgreSQL."""
+        db.session.execute(text("select 1"))
+        return jsonify({"ok": True, "service": "faenet"})
+
     # O projeto ainda nao usa um sistema de migrations. ``create_all`` e
     # idempotente e garante que novas tabelas de recursos (como o avatar 3D)
     # existam tanto no SQLite local quanto no PostgreSQL de producao.
+    # Uma falha aqui nao pode derrubar o boot: quem reporta a saude do banco
+    # para o Render e o endpoint /healthz acima.
     with app.app_context():
-        db.create_all()
-        _ensure_avatar_schema()
+        try:
+            db.create_all()
+            _ensure_avatar_schema()
+        except SQLAlchemyError:
+            app.logger.exception("Nao foi possivel preparar o schema do banco")
 
     return app
 

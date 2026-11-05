@@ -22,6 +22,7 @@
                 opts.body = JSON.stringify(opts.body);
                 opts.headers['Content-Type'] = 'application/json';
             }
+            if (this.csrf) opts.headers['X-FaeNet-CSRF'] = this.csrf;
 
             let response;
             try {
@@ -40,6 +41,9 @@
             }
 
             if (!response.ok || (data && data.ok === false)) {
+                if (response.status === 428 && data?.error?.code === 'profile_setup_required') {
+                    window.location.assign('/auth/faehub/profile');
+                }
                 const message = (data && data.error && data.error.message) || `Erro ${response.status}`;
                 const error = new Error(message);
                 error.status = response.status;

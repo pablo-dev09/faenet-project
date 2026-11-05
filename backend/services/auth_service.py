@@ -35,6 +35,9 @@ def register_user(
     turma: str | None = None,
 ) -> User:
     """Cria um novo usuario. Levanta ``AuthError`` em caso de inconsistencia."""
+    from .federation import required
+    if required():
+        raise AuthError('Crie sua conta pelo convite da escola no FaeHub.', 403)
     username = sanitize_text(username).lower()
     name = sanitize_text(name)
 
@@ -45,11 +48,13 @@ def register_user(
     if not name:
         raise AuthError("Informe seu nome completo.", 400)
 
-    if User.query.get(username):
+    from .onboarding import find_user
+    if find_user(username):
         raise AuthError("Esse nome de usuario ja esta em uso.", 409)
 
     user = User(
         username=username,
+        handle=username,
         name=name,
         curso=(sanitize_text(curso) or None) if curso else None,
         turma=(sanitize_text(turma) or None) if turma else None,
@@ -62,6 +67,9 @@ def register_user(
 
 def authenticate(*, username: str, password: str) -> User:
     """Valida credenciais e retorna o usuario. Levanta ``AuthError`` caso falhe."""
+    from .federation import required
+    if required():
+        raise AuthError('Entre com sua conta FaeHub.', 403)
     username = sanitize_text(username).lower()
     if not username or not password:
         raise AuthError("Informe usuario e senha.", 400)

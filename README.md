@@ -34,7 +34,7 @@ FaeNet e uma aplicacao web completa inspirada em redes sociais modernas (feed, s
 - **Flask-SQLAlchemy** como ORM
 - **Flask-Login** para autenticacao baseada em sessao (cookie httpOnly)
 - **Werkzeug** para hash seguro de senhas (pbkdf2:sha256)
-- **PostgreSQL** em producao / **SQLite** em desenvolvimento
+- **Supabase/PostgreSQL** como banco persistente
 - Estrutura modular: `models/`, `routes/`, `services/`, `utils/`
 
 ### Frontend
@@ -61,6 +61,7 @@ FaeNet e uma aplicacao web completa inspirada em redes sociais modernas (feed, s
 - FaeMatch: conexoes profissionais por habilidades, interesses e projetos
 - FaeMap: campus ilustrado 2D interativo com avatares online andando e realizando acoes sociais
 - FaeHub+: apresentacao integrada do novo portal academico da ETESC
+- Redirecionamento configuravel da area FaeHub+ para o portal academico
 - Interface administrativa (usuario com `is_admin`) pode apagar qualquer item
 - Toasts, modais, loading states, empty states, confirmacoes
 
@@ -78,6 +79,8 @@ faenet/
 │   ├── models/                 # Modelos SQLAlchemy
 │   │   ├── user.py
 │   │   ├── avatar.py
+│   │   ├── profile_image.py
+│   │   ├── federation.py
 │   │   ├── post.py
 │   │   ├── story.py
 │   │   ├── message.py
@@ -87,6 +90,7 @@ faenet/
 │   ├── routes/                 # Blueprints HTTP
 │   │   ├── auth.py
 │   │   ├── avatars.py
+│   │   ├── federation.py
 │   │   ├── me.py
 │   │   ├── posts.py
 │   │   ├── stories.py
@@ -103,6 +107,9 @@ faenet/
 │   │   ├── story_service.py
 │   │   ├── message_service.py
 │   │   ├── notification_service.py
+│   │   ├── federation.py
+│   │   ├── onboarding.py
+│   │   ├── serialization.py
 │   │   └── hub_service.py
 │   ├── utils/                  # Helpers (respostas, seguranca, uploads)
 │   │   ├── responses.py
@@ -122,24 +129,32 @@ faenet/
 │   │   ├── layout.css
 │   │   ├── components.css
 │   │   ├── responsive.css
-│   │   └── experience.css      # Identidade visual e FaeMap
-│   └── js/
-│       ├── app.js              # SPA principal
-│       ├── api.js              # Wrapper de fetch
-│       ├── auth.js
-│       ├── feed.js
-│       ├── profile.js
-│       ├── messages.js
-│       ├── faematch.js          # Conexoes e projetos colaborativos
-│       ├── faemap.js            # Mapa 2D e presenca animada no campus
-│       ├── fae3d.js              # Adaptador visual dos avatares e animacoes
-│       ├── avatar.js             # Estudio de personalizacao do avatar
-│       ├── hub.js
-│       ├── notifications.js
-│       ├── explore.js
-│       └── utils.js
+│   │   ├── experience.css      # Identidade visual e FaeMap
+│   │   ├── identity.css        # Area FaeHub+
+│   │   └── three-experience.css# Camadas 3D dos avatares
+│   ├── js/
+│   │   ├── app.js              # SPA principal
+│   │   ├── api.js              # Wrapper de fetch
+│   │   ├── auth.js
+│   │   ├── feed.js
+│   │   ├── profile.js
+│   │   ├── messages.js
+│   │   ├── faematch.js          # Conexoes e projetos colaborativos
+│   │   ├── faemap.js            # Mapa 2D e presenca animada no campus
+│   │   ├── fae3d.js              # Adaptador visual dos avatares e animacoes
+│   │   ├── avatar.js             # Estudio de personalizacao do avatar
+│   │   ├── identity.js           # Login e onboarding do FaeHub+
+│   │   ├── hub.js
+│   │   ├── notifications.js
+│   │   ├── explore.js
+│   │   └── utils.js
+│   ├── vendor/                # Three.js empacotado (sem CDN)
+│   │   ├── three.core.js
+│   │   └── three.module.js
+│   └── assets/                # Imagens e icones da interface
 │
-├── instance/                   # Banco SQLite (criado em runtime)
+├── docs/                      # Documentacao do projeto
+├── supabase/migrations/        # Esquema PostgreSQL versionado
 ├── app.py                      # Entry point (gunicorn/uvicorn)
 ├── requirements.txt
 ├── .env.example
@@ -210,44 +225,33 @@ Acesse **http://localhost:5000**.
 
 ---
 
-## Como configurar o banco de dados
+## Banco de dados Supabase
 
-### SQLite (padrao para desenvolvimento)
+O banco persistente da FaeNet e um projeto Supabase separado do FaeHub+.
+O esquema versionado esta em `supabase/migrations/` e contempla toda a rede
+social: usuarios, feed, comentarios, reacoes, stories, mensagens,
+notificacoes e Hub do curso.
 
-Ja vem configurado por padrao. O arquivo sera criado em `instance/faenet.db` na primeira execucao.
+1. Em **Supabase > Connect**, copie a URL **Session pooler**.
+2. Crie um `.env` a partir de `.env.example` e configure:
 
-Para criar as tabelas e popular dados de demonstracao:
-
-```bash
-flask --app backend.app init-db
-flask --app backend.app seed-demo
-```
-
-### PostgreSQL (producao)
-
-1. Instale o driver:
-   ```bash
-   pip install psycopg2-binary
-   ```
-
-2. Crie o banco:
-   ```sql
-   CREATE DATABASE faenet;
-   CREATE USER faenet_user WITH PASSWORD 'sua-senha-segura';
-   GRANT ALL PRIVILEGES ON DATABASE faenet TO faenet_user;
-   ```
-
-3. No `.env`:
-   ```
-   DATABASE_URL=postgresql+psycopg2://faenet_user:sua-senha-segura@localhost:5432/faenet
+   ```env
+   DATABASE_URL=postgresql://postgres.PROJECT_REF:SENHA@HOST-DO-POOLER:5432/postgres
+   DB_SSLMODE=require
+   DB_POOL_SIZE=5
    FLASK_ENV=production
    SECRET_KEY=<valor-aleatorio-forte>
    ```
 
-4. Inicialize o banco:
+3. O esquema e aplicado por migration no Supabase. Para preencher uma
+   instalacao de demonstracao, execute uma unica vez:
+
    ```bash
-   flask --app backend.app init-db
+   flask --app backend.app seed-demo
    ```
+
+SQLite continua disponivel apenas como fallback local descartavel e nos
+testes; nunca e usado no deploy de producao.
 
 ---
 
@@ -281,10 +285,12 @@ Contas de demonstracao (todas com senha `demo1234`):
 1. Suba o projeto para um repositorio no GitHub.
 2. Em [railway.app](https://railway.app/), clique em **New Project > Deploy from GitHub**.
 3. Selecione o repositorio da FaeNet.
-4. Adicione um servico PostgreSQL: **+ New > Database > PostgreSQL**.
+4. Em **Supabase > Connect**, copie a URL **Session pooler**.
 5. Nas variaveis de ambiente do servico web:
    ```
-   DATABASE_URL = ${{Postgres.DATABASE_URL}}
+   DATABASE_URL = <session-pooler-do-supabase>
+   DB_SSLMODE = require
+   DB_POOL_SIZE = 5
    SECRET_KEY = (gere um valor aleatorio forte)
    FLASK_ENV = production
    ```
@@ -296,12 +302,18 @@ Contas de demonstracao (todas com senha `demo1234`):
 
 ### Render
 
-1. Em [render.com](https://render.com/), clique em **New > Web Service**.
-2. Conecte o repositorio.
-3. **Build Command**: `pip install -r requirements.txt`
-4. **Start Command**: `gunicorn -w 2 -b 0.0.0.0:$PORT backend.app:app`
-5. Crie um **PostgreSQL** no proprio Render e copie a `DATABASE_URL`.
-6. Adicione nas variaveis: `DATABASE_URL`, `SECRET_KEY`, `FLASK_ENV=production`.
+O arquivo `render.yaml` da raiz ja descreve o servico gratuito, o health
+check, o comando Gunicorn e todas as variaveis nao secretas.
+
+1. Em [render.com](https://render.com/), clique em **New > Blueprint**.
+2. Selecione o repositorio `pablo-dev09/faenet-project`.
+3. Informe apenas `DATABASE_URL` usando a URL **Session pooler** do Supabase.
+4. Confirme a criacao do servico `faenet`; os demais campos sao aplicados
+   automaticamente pelo Blueprint.
+
+> O sistema de arquivos do plano gratuito do Render e temporario. O banco
+> fica seguro no Supabase, mas uploads de imagens ainda precisam ser movidos
+> para o Supabase Storage para persistirem depois de reinicios e novos deploys.
 
 ### Docker (opcional)
 
@@ -442,6 +454,37 @@ Base: `/api`. Toda resposta segue `{ "ok": true, "data": ... }` ou `{ "ok": fals
 | POST   | `/api/hub/<id>/solve`                             | Marcar como resolvido          |
 
 ---
+
+## Desempenho e testes de regressao
+
+As listagens agregam contadores no banco, restritos aos IDs da resposta, sem
+carregar colecoes inteiras de curtidas, comentarios ou seguidores. Autores e
+originais de reposts sao carregados junto da pagina; o filtro de seguidos e de
+stories ativos e feito em SQL. O resumo das conversas usa funcoes de janela,
+retornando somente a ultima mensagem e a quantidade de nao lidas por contato.
+Nao ha cache compartilhado de dados autenticados nem alteracoes no frontend.
+
+Medicoes em fixtures locais isoladas (consultas SQL, nao tempo de rede):
+
+| Cenario | Antes | Depois |
+|---|---:|---:|
+| Feed com 30 publicacoes/autores, incluindo repost | 209 | 7 |
+| Busca de 30 usuarios | 61 | 3 |
+| Resumo de 15 conversas com 10 mensagens cada | 46 | 3 |
+
+O numero de consultas do feed permanece em 7 para paginas nao vazias de ate
+100 itens. Isso nao elimina latencia de rede ou espera de inicializacao da
+hospedagem. Nao foi necessario alterar schema, credenciais ou permissoes.
+
+Depois de instalar `requirements.txt`, rode na raiz da FaeNet:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+Os testes fixam `FLASK_ENV=testing` e um SQLite em memoria, sem dados reais.
+Cobrem equivalencia de payload, paginacao, reposts, curtidas/salvos, contadores,
+stories/expiracao, isolamento de mensagens, login e restricoes de acesso.
 
 ## Licenca
 

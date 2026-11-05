@@ -4,13 +4,25 @@ FaeNet - Rotas /api/hub
 Hub do Curso: estagios, provas e forum de duvidas.
 """
 
-from flask import Blueprint, request
+from urllib.parse import urlparse
+
+from flask import Blueprint, current_app, redirect, request
 from flask_login import current_user, login_required
 
 from ..services import hub_service
 from ..utils.responses import fail, ok
 
 hub_bp = Blueprint("hub", __name__, url_prefix="/api/hub")
+
+
+@hub_bp.route("/faehub", methods=["GET"])
+def open_faehub():
+    """Redireciona a area FaeHub+ da FaeNet para o portal academico."""
+    target = str(current_app.config.get("FAEHUB_URL", "")).strip()
+    parsed = urlparse(target)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return fail("Endereco do FaeHub+ nao configurado.", 503)
+    return redirect(target, code=302)
 
 
 @hub_bp.route("", methods=["GET"])

@@ -24,10 +24,16 @@
             if (appRoot) appRoot.hidden = false;
 
             // Tenta descobrir a sessao
-            await FaeAuth.bootstrap();
+            try { await FaeAuth.bootstrap(); }
+            catch (_) {
+                const message = document.createElement('p'); message.textContent = 'Não foi possível carregar a entrada. Confira sua conexão e atualize a página.';
+                message.setAttribute('role','alert'); appRoot.replaceChildren(message); return;
+            }
 
             // Lida com o deep-link inicial
+            if(FaeAuth.currentUser?.profile_complete===false){window.location.assign('/auth/faehub/profile');return;}
             const initialPath = window.location.pathname || '/';
+            FaeAuth.returnTo = initialPath;
             if (initialPath === '/register' && !FaeAuth.isAuthed()) {
                 FaeAuth.renderRegister();
             } else if (initialPath === '/login' && !FaeAuth.isAuthed()) {
@@ -128,14 +134,14 @@
             if (av) {
                 av.textContent = (me.avatar_text || '').slice(0, 2) || (me.name || me.username || 'FN').slice(0, 2).toUpperCase();
                 if (me.avatar_img) {
-                    const img = FaeUtils.el('img', { src: me.avatar_img, alt: me.username });
+                    const img = FaeUtils.el('img', { src: me.avatar_img, alt: me.name || FaeUtils.userHandle(me) });
                     av.appendChild(img);
                 }
             }
             const nameEl = root.querySelector('[data-text="me-name"]');
             if (nameEl) nameEl.textContent = me.name || me.username;
             const usernameEl = root.querySelector('[data-text="me-username"]');
-            if (usernameEl) usernameEl.textContent = `@${me.username}`;
+            if (usernameEl) usernameEl.textContent = `@${FaeUtils.userHandle(me)}`;
         },
 
         highlightActive() {
@@ -240,7 +246,7 @@
             const card = FaeUtils.el('div', { class: 'card' });
             card.appendChild(FaeUtils.el('h2', { class: 'card__title' }, 'Conta'));
             card.appendChild(FaeUtils.el('div', { class: 'muted text-sm' },
-                `Logado como ${me.name} (@${me.username})`));
+                `Logado como ${me.name} (@${FaeUtils.userHandle(me)})`));
             const actions = FaeUtils.el('div', { class: 'flex gap-1 mt-2' });
             actions.appendChild(FaeUtils.el('a', { class: 'btn btn--ghost', href: '/profile', 'data-link': true }, '✎ Editar perfil'));
             actions.appendChild(FaeUtils.el('button', { class: 'btn btn--danger', onclick: async () => {
@@ -278,11 +284,11 @@
                     FaeUtils.clear(list);
                     if (!users.length) { list.appendChild(FaeUtils.el('div', { class: 'muted text-sm' }, 'Nenhum online agora.')); return; }
                     users.forEach(u => {
-                        const a = FaeUtils.el('a', { href: `/profile/${u.username}`, 'data-link': true, class: 'user-card' },
+                        const a = FaeUtils.el('a', { href: FaeUtils.profilePath(u), 'data-link': true, class: 'user-card' },
                             FaeUtils.avatarNode(u, 'xs'),
                             FaeUtils.el('div', { class: 'user-card__info' },
                                 FaeUtils.el('div', { class: 'user-card__name' }, u.name || u.username),
-                                FaeUtils.el('div', { class: 'user-card__username' }, '@' + u.username),
+                                FaeUtils.el('div', { class: 'user-card__username' }, '@' + FaeUtils.userHandle(u)),
                             ),
                         );
                         list.appendChild(a);
@@ -299,7 +305,7 @@
                             FaeUtils.avatarNode(u, 'xs'),
                             FaeUtils.el('div', { class: 'user-card__info' },
                                 FaeUtils.el('div', { class: 'user-card__name' }, u.name || u.username),
-                                FaeUtils.el('div', { class: 'user-card__username' }, '@' + u.username),
+                                FaeUtils.el('div', { class: 'user-card__username' }, '@' + FaeUtils.userHandle(u)),
                             ),
                             FaeUtils.followButton(u, FaeAuth.currentUser, false),
                         );
@@ -341,12 +347,16 @@
         },
 
         go(path) {
-            if (path === window.location.pathname) {
-                this.route(path);
+            const target = new URL(path, window.location.href);
+            if (target.origin !== window.location.origin) {
+                FaeUtils.error('Este destino não é uma página da FaeNet.');
                 return;
             }
-            history.pushState(null, '', path);
-            this.route(path);
+            const destination = target.pathname + target.search + target.hash;
+            const current = window.location.pathname + window.location.search + window.location.hash;
+            if (destination !== current) history.pushState(null, '', destination);
+            // Query parameters belong to the screen, not the route name.
+            this.route(target.pathname);
         },
 
         refresh() {

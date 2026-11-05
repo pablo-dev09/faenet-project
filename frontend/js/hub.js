@@ -17,6 +17,8 @@
         { icon: '•••', tone: 'slate', title: 'E muito mais', text: 'Tudo integrado para facilitar sua vida acadêmica.' },
     ];
 
+    const FAEHUB_REDIRECT_URL = '/api/hub/faehub';
+
     const Hub = {
         render(container) {
             const page = FaeUtils.el('div', { class: 'faehub-page' });
@@ -41,9 +43,15 @@
                     ),
                 ),
                 FaeUtils.el('div', { class: 'faehub-header__links' },
-                    FaeUtils.el('button', { class: 'faehub-mini-card', onclick: () => this.notAvailable() },
+                    FaeUtils.el('a', {
+                        class: 'faehub-mini-card',
+                        href: FAEHUB_REDIRECT_URL,
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        'aria-label': 'Abrir o site oficial do FaeHub+ em uma nova aba',
+                    },
                         FaeUtils.el('span', { class: 'faehub-mini-card__icon' }, '↗'),
-                        FaeUtils.el('span', {}, FaeUtils.el('b', {}, 'Site oficial do FaeHub+'), FaeUtils.el('small', {}, 'Em desenvolvimento')),
+                        FaeUtils.el('span', {}, FaeUtils.el('b', {}, 'Site oficial do FaeHub+'), FaeUtils.el('small', {}, 'Abrir portal acadêmico')),
                     ),
                     FaeUtils.el('button', { class: 'faehub-mini-card faehub-mini-card--support', onclick: () => this.notAvailable('O suporte do FaeHub+ será disponibilizado em breve.') },
                         FaeUtils.el('span', { class: 'faehub-mini-card__icon' }, '?'),
@@ -59,12 +67,18 @@
                     FaeUtils.el('span', { class: 'faehub-kicker' }, 'SUA VIDA ACADÊMICA EM UM SÓ LUGAR'),
                     FaeUtils.el('h2', { html: 'Acesse o <strong>FaeHub+</strong>' }),
                     FaeUtils.el('p', {}, 'O FaeHub+ é o portal oficial da ETESC para acompanhar sua vida acadêmica: notas, frequências, horários, provas, documentos e muito mais.'),
-                    FaeUtils.el('button', { class: 'btn btn--primary faehub-cta', onclick: () => this.notAvailable() },
+                    FaeUtils.el('a', {
+                        class: 'btn btn--primary faehub-cta',
+                        href: FAEHUB_REDIRECT_URL,
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        'aria-label': 'Abrir o FaeHub+ em uma nova aba',
+                    },
                         FaeUtils.el('span', {}, '↗'),
                         FaeUtils.el('b', {}, 'Abrir o FaeHub+'),
                         FaeUtils.el('span', {}, '→'),
                     ),
-                    FaeUtils.el('small', {}, 'O FaeHub+ ainda está sendo desenvolvido. O acesso será liberado em breve.'),
+                    FaeUtils.el('small', {}, 'O portal acadêmico será aberto em uma nova aba.'),
                 ),
             );
         },
@@ -115,7 +129,7 @@
             );
         },
 
-        notAvailable(message = 'O FaeHub+ ainda está sendo desenvolvido. O redirecionamento será adicionado em breve.') {
+        notAvailable(message = 'Este recurso será disponibilizado em breve.') {
             FaeUtils.info(message);
         },
     };
