@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/css/components.css" />
     <link rel="stylesheet" href="/css/responsive.css" />
     <link rel="stylesheet" href="/css/experience.css" />
+    <link rel="stylesheet" href="/css/three-experience.css" />
     <link rel="icon" type="image/svg+xml" href="/img/faenet-mark.svg" />
     <link rel="apple-touch-icon" href="/img/faenet-mark.svg" />
 </head>
@@ -41,6 +42,7 @@
     <template id="tpl-login">
         <div class="auth auth--login">
             <div class="auth__backdrop" aria-hidden="true"></div>
+            <div class="auth__motion" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
             <section class="auth__panel auth__panel--login">
                 <div class="auth__login-content">
                     <div class="auth__brand">
@@ -51,20 +53,23 @@
                         </div>
                     </div>
                     <form class="auth__form auth__form--login" data-form="login">
-                        <div class="auth__eyebrow">Portal do aluno</div>
+                        <span class="auth__portal-pill">PORTAL DO ALUNO</span>
                         <h1 class="auth__title">Bem-vindo de volta</h1>
                         <p class="auth__subtitle">Entre para continuar na comunidade FaeNet.</p>
                         <label class="field">
                             <span class="field__label">Usuário</span>
-                            <span class="auth__input-wrap"><span class="auth__input-icon" aria-hidden="true">♙</span><input class="field__input" name="username" type="text" required autocomplete="username" placeholder="Seu usuário" /></span>
+                            <span class="auth__input-wrap">
+                                <svg class="auth__input-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+                                <input class="field__input" name="username" type="text" required autocomplete="username" placeholder="Seu usuário" />
+                            </span>
                         </label>
                         <label class="field">
                             <span class="field__label">Senha</span>
                             <span class="auth__password-wrap">
-                                <span class="auth__input-icon" aria-hidden="true">◇</span>
+                                <svg class="auth__input-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
                                 <input class="field__input" name="password" type="password" required autocomplete="current-password" placeholder="Sua senha" />
                                 <button class="auth__password-toggle" type="button" data-action="toggle-password" aria-label="Mostrar senha" aria-pressed="false">
-                                    <span aria-hidden="true">◉</span>
+                                    <span class="auth__eye" aria-hidden="true"></span>
                                 </button>
                             </span>
                         </label>
@@ -72,7 +77,7 @@
                             <label class="auth__remember"><input type="checkbox" name="remember" checked /><span>Lembrar de mim</span></label>
                             <button type="button" class="auth__forgot" data-action="forgot-password">Esqueci minha senha</button>
                         </div>
-                        <button class="btn btn--primary btn--block auth__submit" type="submit">Entrar</button>
+                        <button class="btn btn--primary btn--block auth__submit" type="submit"><span>Entrar</span><b>→</b></button>
                         <div class="auth__divider"><span>Ainda não faz parte?</span></div>
                         <a class="btn btn--ghost btn--block auth__create" href="/register" data-link>Criar conta</a>
                         <details class="auth__demo">
@@ -89,7 +94,7 @@
                     <h2>Ideias encontram<br />pessoas.<br /><strong>Projetos ganham vida.</strong></h2>
                     <p>CONECTE &nbsp;·&nbsp; COLABORE &nbsp;·&nbsp; CONSTRUA</p>
                 </div>
-                <div class="auth__story-chip auth__story-chip--ideas"><span class="auth__story-chip-icon">♚</span><span><b>Encontre sua equipe</b><small>Pessoas certas para grandes ideias.</small></span></div>
+                <div class="auth__story-chip auth__story-chip--ideas"><span class="auth__story-chip-icon">♟</span><span><b>Encontre sua equipe</b><small>Pessoas certas para grandes ideias.</small></span></div>
                 <div class="auth__story-chip auth__story-chip--community"><span class="auth__story-chip-icon">✦</span><span><b>Crie algo incrível</b><small>Da ideia ao projeto, juntos na FaeNet.</small></span></div>
             </section>
         </div>
@@ -146,15 +151,16 @@
                     <div class="sidebar__logo-text">FaeNet</div>
                 </div>
                 <nav class="sidebar__nav">
-                    <a class="sidebar__link" data-route="feed" href="/feed" data-tip="Início"><span class="sidebar__icon">⌂</span><span>Início</span></a>
-                    <a class="sidebar__link" data-route="explore" href="/explore" data-tip="Explorar"><span class="sidebar__icon">⌕</span><span>Explorar</span></a>
-                    <a class="sidebar__link" data-route="faematch" href="/faematch" data-tip="FaeMatch"><span class="sidebar__icon">♧</span><span>FaeMatch</span></a>
-                    <a class="sidebar__link" data-route="faemap" href="/faemap" data-tip="FaeMap"><span class="sidebar__icon">⌖</span><span>FaeMap</span></a>
-                    <a class="sidebar__link" data-route="hub" href="/hub" data-tip="FaeHub+"><span class="sidebar__icon">◇</span><span>FaeHub+</span></a>
-                    <a class="sidebar__link" data-route="messages" href="/messages" data-tip="Mensagens"><span class="sidebar__icon">□</span><span>Mensagens</span><span class="badge" data-badge="messages" hidden>0</span></a>
-                    <a class="sidebar__link" data-route="notifications" href="/notifications" data-tip="Notificações"><span class="sidebar__icon">♢</span><span>Notificações</span><span class="badge" data-badge="notifications" hidden>0</span></a>
-                    <a class="sidebar__link" data-route="profile" href="/profile" data-tip="Perfil"><span class="sidebar__icon">♙</span><span>Perfil</span></a>
-                    <a class="sidebar__link" data-route="settings" href="/settings" data-tip="Configurações"><span class="sidebar__icon">⚙</span><span>Configurações</span></a>
+                    <a class="sidebar__link" data-route="feed" href="/feed" data-tip="Início"><span class="sidebar__icon">🏠</span><span>Início</span></a>
+                    <a class="sidebar__link" data-route="explore" href="/explore" data-tip="Explorar"><span class="sidebar__icon">🔎</span><span>Explorar</span></a>
+                    <a class="sidebar__link" data-route="faematch" href="/faematch" data-tip="FaeMatch"><span class="sidebar__icon">🤝</span><span>FaeMatch</span></a>
+                    <a class="sidebar__link" data-route="faemap" href="/faemap" data-tip="FaeMap"><span class="sidebar__icon">🗺️</span><span>FaeMap</span></a>
+                    <a class="sidebar__link" data-route="avatar" href="/avatar" data-tip="Meu Avatar"><span class="sidebar__icon">🧑‍🎨</span><span>Meu Avatar</span></a>
+                    <a class="sidebar__link" data-route="hub" href="/hub" data-tip="FaeHub+"><span class="sidebar__icon">🎓</span><span>FaeHub+</span></a>
+                    <a class="sidebar__link" data-route="messages" href="/messages" data-tip="Mensagens"><span class="sidebar__icon">💬</span><span>Mensagens</span><span class="badge" data-badge="messages" hidden>0</span></a>
+                    <a class="sidebar__link" data-route="notifications" href="/notifications" data-tip="Notificações"><span class="sidebar__icon">🔔</span><span>Notificações</span><span class="badge" data-badge="notifications" hidden>0</span></a>
+                    <a class="sidebar__link" data-route="profile" href="/profile" data-tip="Perfil"><span class="sidebar__icon">👤</span><span>Perfil</span></a>
+                    <a class="sidebar__link" data-route="settings" href="/settings" data-tip="Configurações"><span class="sidebar__icon">⚙️</span><span>Configurações</span></a>
                 </nav>
                 <button class="btn btn--primary btn--block sidebar__compose" data-action="compose">
                     <span>+ Criar publicacao</span>
@@ -195,7 +201,7 @@
                 <a class="bottombar__link" data-route="explore" href="/explore"><span>🔍</span><span>Explorar</span></a>
                 <a class="bottombar__link" data-route="faematch" href="/faematch"><span>👥</span><span>Match</span></a>
                 <button class="bottombar__compose" data-action="compose">＋</button>
-                <a class="bottombar__link" data-route="faemap" href="/faemap"><span>⌖</span><span>Mapa</span></a>
+                <a class="bottombar__link" data-route="faemap" href="/faemap"><span>🗺️</span><span>Mapa</span></a>
                 <a class="bottombar__link" data-route="messages" href="/messages"><span>✉️</span><span>Chat</span><span class="badge" data-badge="messages" hidden>0</span></a>
                 <a class="bottombar__link" data-route="notifications" href="/notifications"><span>🔔</span><span>Notif.</span><span class="badge" data-badge="notifications" hidden>0</span></a>
             </nav>
@@ -203,6 +209,8 @@
     </template>
 
     <!-- Scripts -->
+    <script>window.fae3dReady = new Promise(resolve => window.addEventListener('fae3d-ready', resolve, { once: true }));</script>
+    <script type="module" src="/js/fae3d.js"></script>
     <script src="/js/api.js"></script>
     <script src="/js/utils.js"></script>
     <script src="/js/auth.js"></script>
@@ -211,6 +219,7 @@
     <script src="/js/messages.js"></script>
     <script src="/js/faematch.js"></script>
     <script src="/js/faemap.js"></script>
+    <script src="/js/avatar.js"></script>
     <script src="/js/hub.js"></script>
     <script src="/js/notifications.js"></script>
     <script src="/js/explore.js"></script>

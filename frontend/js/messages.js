@@ -21,6 +21,7 @@
             const sidebar = FaeUtils.el('div', { class: 'chat__sidebar' });
             const sidebarHeader = FaeUtils.el('div', { class: 'chat__sidebar-header' },
                 FaeUtils.el('h2', {}, 'Mensagens'),
+                FaeUtils.el('button', { class: 'chat__new-btn', type: 'button', title: 'Nova conversa', 'aria-label': 'Nova conversa' }, '＋'),
             );
             sidebar.appendChild(sidebarHeader);
 
@@ -42,14 +43,17 @@
             chat.appendChild(thread);
             container.appendChild(chat);
 
+            let showContacts = false;
+
             async function loadConversations() {
                 list.innerHTML = '';
                 let convs = [];
                 try { convs = await FaeAPI.conversations(); } catch (e) { FaeUtils.error(e.message); return; }
                 const filter = (search.value || '').toLowerCase();
-                convs
-                    .filter(c => !filter || (c.with && (c.with.username.toLowerCase().includes(filter) || (c.with.name || '').toLowerCase().includes(filter))))
-                    .forEach(c => {
+                const visibleConversations = convs.filter(c => !filter || (c.with && (c.with.username.toLowerCase().includes(filter) || (c.with.name || '').toLowerCase().includes(filter))));
+
+                if (!showContacts) {
+                    visibleConversations.forEach(c => {
                         const item = FaeUtils.el('div', { class: 'chat__item' + (Messages.activeOther === c.with.username ? ' is-active' : ''), data: { username: c.with.username } },
                             FaeUtils.avatarNode(c.with, 'sm'),
                             FaeUtils.el('div', { class: 'chat__item-info' },
@@ -66,10 +70,68 @@
                         item.addEventListener('click', () => openThread(c.with.username));
                         list.appendChild(item);
                     });
-                if (!list.children.length) {
-                    list.appendChild(FaeUtils.el('div', { class: 'empty' }, 'Nenhuma conversa ainda.'));
+                }
+
+                const shouldDiscover = showContacts || (!visibleConversations.length && (filter || !convs.length));
+                if (shouldDiscover) {
+                    list.innerHTML = '';
+                    list.appendChild(FaeUtils.el('div', { class: 'chat__directory-title' },
+                        showContacts ? 'Nova conversa' : 'Comece uma conversa',
+                    ));
+                    let users = [];
+                    try {
+                        if (filter) {
+                            users = await FaeAPI.searchUsers(filter);
+                        } else {
+                            const results = await Promise.allSettled([
+                                FaeAPI.onlineUsers(20),
+                                FaeAPI.suggestions(20),
+                            ]);
+                            results.forEach(result => {
+                                if (result.status === 'fulfilled') users.push(...result.value);
+                            });
+                        }
+                    } catch (e) {
+                        FaeUtils.error(e.message);
+                    }
+                    const unique = new Map();
+                    users.forEach(user => {
+                        if (user && user.username !== me.username) unique.set(user.username, user);
+                    });
+                    unique.forEach(user => {
+                        const item = FaeUtils.el('button', {
+                            class: 'chat__item chat__item--contact',
+                            type: 'button',
+                            data: { username: user.username },
+                        },
+                            FaeUtils.avatarNode(user, 'sm'),
+                            FaeUtils.el('div', { class: 'chat__item-info' },
+                                FaeUtils.el('div', { class: 'chat__item-name' }, user.name || user.username),
+                                FaeUtils.el('div', { class: 'chat__item-preview' }, '@' + user.username + ' · Iniciar conversa'),
+                            ),
+                            FaeUtils.el('span', { class: 'chat__contact-action' }, '→'),
+                        );
+                        item.addEventListener('click', () => {
+                            showContacts = false;
+                            openThread(user.username);
+                        });
+                        list.appendChild(item);
+                    });
+                    if (unique.size === 0) {
+                        list.appendChild(FaeUtils.el('div', { class: 'chat__empty chat__empty--compact' },
+                            filter ? 'Nenhuma pessoa encontrada.' : 'Busque alguém pelo nome ou usuário.',
+                        ));
+                    }
                 }
             }
+            const newConversationButton = sidebarHeader.querySelector('.chat__new-btn');
+            newConversationButton.addEventListener('click', () => {
+                showContacts = !showContacts;
+                newConversationButton.classList.toggle('is-active', showContacts);
+                search.placeholder = showContacts ? 'Buscar pessoas...' : 'Buscar conversas...';
+                search.focus();
+                loadConversations();
+            });
             search.addEventListener('input', FaeUtils.debounce(loadConversations, 200));
 
             async function openThread(username) {
@@ -114,7 +176,7 @@
                 thread.appendChild(header);
 
                 const messagesBox = FaeUtils.el('div', { class: 'chat__messages' });
-                msgs.forEach(m => messagesBox.appendChild(this.renderMessage(m, me)));
+                msgs.forEach(m => messagesBox.appendChild(Messages.renderMessage(m, me)));
                 thread.appendChild(messagesBox);
                 messagesBox.scrollTop = messagesBox.scrollHeight;
 
@@ -164,6 +226,7 @@
                         clearReply();
                         messagesBox.appendChild(Messages.renderMessage(m, me));
                         messagesBox.scrollTop = messagesBox.scrollHeight;
+                        loadConversations();
                     } catch (e) {
                         FaeUtils.error(e.message);
                     } finally {
@@ -190,6 +253,7 @@
                         });
                         messagesBox.appendChild(Messages.renderMessage(m, me));
                         messagesBox.scrollTop = messagesBox.scrollHeight;
+                        loadConversations();
                     } catch (e) {
                         FaeUtils.error(e.message);
                     }

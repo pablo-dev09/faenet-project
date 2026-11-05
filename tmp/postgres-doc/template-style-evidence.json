@@ -1,0 +1,168 @@
+{
+  "input": "C:\\Users\\Pablo\\OneDrive - NET4TRESS\\FaeNet_Documentacao_Revisada.docx",
+  "fonts_by_char_count": {},
+  "direct_run_formatting_runs": 480,
+  "direct_paragraph_formatting_paragraphs": 427,
+  "heading_like_paragraphs_not_heading_style": [
+    {
+      "para_index": 8,
+      "text": "PABLO SOUSA RIBEIRO\nMARLON EDUARDO DA SILVA AMARAL\n",
+      "style": "Normal"
+    },
+    {
+      "para_index": 13,
+      "text": "PROJETO FINAL \u2014 3110\nFAENET\nRede social acad\u00eamica da comunidade ETESC/FAETEC",
+      "style": "Normal"
+    },
+    {
+      "para_index": 14,
+      "text": "RIO DE JANEIRO \u2014 RJ\n2026",
+      "style": "Normal"
+    },
+    {
+      "para_index": 16,
+      "text": "BANCA EXAMINADORA",
+      "style": "Normal"
+    },
+    {
+      "para_index": 24,
+      "text": "Sum\u00e1rio",
+      "style": "Normal"
+    },
+    {
+      "para_index": 276,
+      "text": "ID",
+      "style": "Normal"
+    },
+    {
+      "para_index": 277,
+      "text": "Requisito",
+      "style": "Normal"
+    },
+    {
+      "para_index": 278,
+      "text": "Descri\u00e7\u00e3o",
+      "style": "Normal"
+    },
+    {
+      "para_index": 333,
+      "text": "ID",
+      "style": "Normal"
+    },
+    {
+      "para_index": 334,
+      "text": "Categoria",
+      "style": "Normal"
+    },
+    {
+      "para_index": 335,
+      "text": "Descri\u00e7\u00e3o",
+      "style": "Normal"
+    },
+    {
+      "para_index": 372,
+      "text": "ID",
+      "style": "Normal"
+    },
+    {
+      "para_index": 373,
+      "text": "Regra",
+      "style": "Normal"
+    },
+    {
+      "para_index": 394,
+      "text": "Ator",
+      "style": "Normal"
+    },
+    {
+      "para_index": 395,
+      "text": "Responsabilidade",
+      "style": "Normal"
+    },
+    {
+      "para_index": 402,
+      "text": "Campo",
+      "style": "Normal"
+    },
+    {
+      "para_index": 403,
+      "text": "Descri\u00e7\u00e3o",
+      "style": "Normal"
+    },
+    {
+      "para_index": 414,
+      "text": "Campo",
+      "style": "Normal"
+    },
+    {
+      "para_index": 415,
+      "text": "Descri\u00e7\u00e3o",
+      "style": "Normal"
+    },
+    {
+      "para_index": 426,
+      "text": "Campo",
+      "style": "Normal"
+    }
+  ],
+  "examples": {
+    "direct_run_formatting": [
+      {
+        "para_index": 3,
+        "run_text": "FUNDA\u00c7\u00c3O DE APOIO \u00c0 ESCOLA T\u00c9CNICA \u2014 FAETEC",
+        "style": "Normal"
+      },
+      {
+        "para_index": 3,
+        "run_text": "\n",
+        "style": "Normal"
+      },
+      {
+        "para_index": 3,
+        "run_text": "ESCOLA T\u00c9CNICA ESTADUAL SANTA CRUZ \u2014 ETESC",
+        "style": "Normal"
+      },
+      {
+        "para_index": 3,
+        "run_text": "\n",
+        "style": "Normal"
+      },
+      {
+        "para_index": 8,
+        "run_text": "PABLO SOUSA RIBEIRO",
+        "style": "Normal"
+      }
+    ],
+    "direct_paragraph_formatting": [
+      {
+        "para_index": 13,
+        "text": "PROJETO FINAL \u2014 3110\nFAENET\nRede social acad\u00eamica da comunidade ETESC/FAETEC",
+        "style": "Normal"
+      },
+      {
+        "para_index": 16,
+        "text": "BANCA EXAMINADORA",
+        "style": "Normal"
+      },
+      {
+        "para_index": 17,
+        "text": "Projeto apresentado \u00e0 Escola T\u00e9cnica Estadual Santa Cruz \u2014 ETESC, como requisito de conclus\u00e3o do Projeto Final \u2014 3110. A",
+        "style": "Normal"
+      },
+      {
+        "para_index": 19,
+        "text": "____________________________________________\nProfessora Mestre Aline Silvestre Rosa Serr\u00e3o\nOrientadora \u2014 FAETEC/ETESC",
+        "style": "Normal"
+      },
+      {
+        "para_index": 20,
+        "text": "____________________________________________\nProfessora Mestre Luciana do Amaral Teixeira\nAvaliadora \u2014 FAETEC/ETESC",
+        "style": "Normal"
+      }
+    ]
+  },
+  "notes": [
+    "Direct formatting is not always wrong, but it often causes inconsistent output when templates change.",
+    "Heading-like paragraphs not using Heading styles can break TOC and accessibility."
+  ]
+}

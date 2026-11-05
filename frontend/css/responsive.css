@@ -106,6 +106,7 @@
     .match-header h1 { font-size: 27px; }
     .match-tab { padding-inline: 14px; }
     .match-hero { padding: 27px 23px; }
+    .match-hero::before { background: linear-gradient(90deg,rgba(9,14,38,.98),rgba(9,14,38,.88) 64%,rgba(9,14,38,.56)); }
     .match-hero__copy { width: 100%; }
     .match-network { opacity: .2; }
     .match-people-grid { grid-template-columns: 1fr; }

@@ -7,6 +7,7 @@ responsabilidades e facilitar manutencao.
 """
 
 from .user import User
+from .avatar import UserAvatar
 from .post import Post, Comment
 from .story import Story
 from .message import Message
@@ -22,6 +23,7 @@ from .associations import (
 
 __all__ = [
     "User",
+    "UserAvatar",
     "Post",
     "Comment",
     "Story",

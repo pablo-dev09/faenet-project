@@ -53,9 +53,16 @@
                     password.type = visible ? 'password' : 'text';
                     togglePassword.setAttribute('aria-pressed', String(!visible));
                     togglePassword.setAttribute('aria-label', visible ? 'Mostrar senha' : 'Ocultar senha');
-                    togglePassword.firstElementChild.textContent = visible ? '◉' : '⊘';
+                    togglePassword.classList.toggle('is-visible', !visible);
                 });
             }
+
+            root.querySelectorAll('[data-role]').forEach(button => {
+                button.addEventListener('click', () => {
+                    root.querySelectorAll('[data-role]').forEach(item => item.classList.toggle('is-active', item === button));
+                    form.elements.role.value = button.dataset.role;
+                });
+            });
 
             root.querySelectorAll('[data-demo-user]').forEach(button => {
                 button.addEventListener('click', () => {
@@ -78,6 +85,7 @@
                 const data = new FormData(form);
                 const submit = form.querySelector('button[type="submit"]');
                 submit.disabled = true;
+                const original = submit.innerHTML;
                 submit.textContent = 'Entrando...';
                 try {
                     await Auth.login(data.get('username').trim(), data.get('password'));
@@ -87,7 +95,7 @@
                     FaeUtils.error(err.message);
                 } finally {
                     submit.disabled = false;
-                    submit.textContent = 'Entrar';
+                    submit.innerHTML = original;
                 }
             });
         },

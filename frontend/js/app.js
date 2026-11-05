@@ -149,15 +149,24 @@
         },
 
         async route(path) {
+            // O roteador compara apenas o pathname, mas mantém query params na URL.
+            // Assim links como /messages?to=marlon abrem a tela correta e o módulo
+            // de mensagens consegue ler o destinatário em window.location.search.
+            path = new URL(path, window.location.origin).pathname;
+            if (typeof this.activeViewCleanup === 'function') {
+                try { this.activeViewCleanup(); } catch (_) { /* view ja desmontada */ }
+                this.activeViewCleanup = null;
+            }
             this.currentRoute = path;
             const main = document.querySelector('[data-view="main"]');
             if (!main) return;
             const shell = document.querySelector('.shell');
             if (shell) {
-                shell.classList.toggle('shell--wide', path === '/faematch' || path === '/hub' || path === '/faemap');
+                shell.classList.toggle('shell--wide', path === '/faematch' || path === '/hub' || path === '/faemap' || path === '/avatar');
                 shell.classList.toggle('shell--faematch', path === '/faematch');
                 shell.classList.toggle('shell--faehub', path === '/hub');
                 shell.classList.toggle('shell--faemap', path === '/faemap');
+                shell.classList.toggle('shell--avatar', path === '/avatar');
                 shell.classList.toggle('shell--feed', path === '/feed' || path === '/' || path === '');
             }
             FaeUtils.clear(main);
@@ -177,7 +186,9 @@
             } else if (path === '/hub') {
                 await FaeHub.render(main);
             } else if (path === '/faemap') {
-                await FaeMap.render(main);
+                this.activeViewCleanup = await FaeMap.render(main);
+            } else if (path === '/avatar') {
+                this.activeViewCleanup = await FaeAvatar.render(main);
             } else if (path === '/messages') {
                 await FaeMessages.render(main);
             } else if (path === '/notifications') {

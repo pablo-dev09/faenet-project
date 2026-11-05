@@ -218,13 +218,6 @@
                     FaeUtils.el('h2', {}, 'Grandes projetos nascem de grandes conexões.'),
                     FaeUtils.el('p', {}, 'Encontre colegas com habilidades e interesses em comum para estudar, colaborar e criar projetos reais.'),
                 ),
-                FaeUtils.el('div', { class: 'match-network', 'aria-hidden': 'true' },
-                    FaeUtils.el('span', { class: 'match-network__node match-network__node--a' }, 'IDEIAS'),
-                    FaeUtils.el('span', { class: 'match-network__node match-network__node--b' }, 'PESSOAS'),
-                    FaeUtils.el('span', { class: 'match-network__node match-network__node--c' }, 'PROJETOS'),
-                    FaeUtils.el('i', { class: 'match-network__line match-network__line--a' }),
-                    FaeUtils.el('i', { class: 'match-network__line match-network__line--b' }),
-                ),
             );
         },
 

@@ -53,13 +53,13 @@ FaeNet e uma aplicacao web completa inspirada em redes sociais modernas (feed, s
 - Stories de 24h (imagem + legenda)
 - Curtir, comentar, repostar, salvar
 - Mensagens privadas com texto, imagem, arquivo e respostas
-- Perfil editavel (avatar, banner com suporte a GIF, bio, turma)
+- Perfil editavel e avatar 3D proprio, personalizavel e animado
 - Seguir / deixar de seguir com lista de seguidores e seguindo
 - Explorar: busca com debounce + grade de pessoas + publicacoes recentes
 - Notificacoes (curtidas, comentarios, seguidores, mensagens)
 - Indicador de usuarios online (heartbeat a cada 30s)
 - FaeMatch: conexoes profissionais por habilidades, interesses e projetos
-- FaeMap: mapa 3D do campus com presenca online voluntaria e localizacao aproximada
+- FaeMap: campus ilustrado 2D interativo com avatares online andando e realizando acoes sociais
 - FaeHub+: apresentacao integrada do novo portal academico da ETESC
 - Interface administrativa (usuario com `is_admin`) pode apagar qualquer item
 - Toasts, modais, loading states, empty states, confirmacoes
@@ -77,6 +77,7 @@ faenet/
 │   ├── seed.py                 # Dados de demonstracao
 │   ├── models/                 # Modelos SQLAlchemy
 │   │   ├── user.py
+│   │   ├── avatar.py
 │   │   ├── post.py
 │   │   ├── story.py
 │   │   ├── message.py
@@ -85,6 +86,7 @@ faenet/
 │   │   └── associations.py
 │   ├── routes/                 # Blueprints HTTP
 │   │   ├── auth.py
+│   │   ├── avatars.py
 │   │   ├── me.py
 │   │   ├── posts.py
 │   │   ├── stories.py
@@ -129,7 +131,9 @@ faenet/
 │       ├── profile.js
 │       ├── messages.js
 │       ├── faematch.js          # Conexoes e projetos colaborativos
-│       ├── faemap.js            # Mapa 3D e presenca no campus
+│       ├── faemap.js            # Mapa 2D e presenca animada no campus
+│       ├── fae3d.js              # Adaptador visual dos avatares e animacoes
+│       ├── avatar.js             # Estudio de personalizacao do avatar
 │       ├── hub.js
 │       ├── notifications.js
 │       ├── explore.js
@@ -355,6 +359,15 @@ Base: `/api`. Toda resposta segue `{ "ok": true, "data": ... }` ou `{ "ok": fals
 | PUT    | `/api/me`                   | Edita perfil (nome, bio, etc.)     |
 | POST   | `/api/me/online`            | Heartbeat de presenca              |
 | POST   | `/api/me/uploads`           | Upload (avatar, banner, post, story, message) |
+
+### Avatar 3D
+
+| Metodo | Endpoint                    | Descricao                                      |
+|--------|-----------------------------|------------------------------------------------|
+| GET    | `/api/avatars/me`           | Carrega a personalizacao do usuario logado     |
+| PUT    | `/api/avatars/me`           | Salva pele, cabelo, roupa e acessorios          |
+| GET    | `/api/avatars/<username>`   | Carrega o avatar publico de um usuario          |
+| GET    | `/api/avatars/online`       | Avatares dos usuarios presentes no FaeMap       |
 
 ### Publicacoes
 

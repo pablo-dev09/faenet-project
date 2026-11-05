@@ -762,6 +762,24 @@
 }
 
 .chat__sidebar-header h2 { margin: 0; font-size: var(--fs-lg); }
+.chat__new-btn {
+    margin-left: auto;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-elev-2);
+    color: var(--text-soft);
+    font-size: 20px;
+    cursor: pointer;
+}
+.chat__new-btn:hover,.chat__new-btn.is-active {
+    border-color: var(--primary);
+    color: #fff;
+    background: var(--primary);
+}
 
 .chat__sidebar-search {
     padding: 8px 14px;
@@ -769,6 +787,14 @@
 }
 
 .chat__sidebar-list { flex: 1; overflow-y: auto; }
+.chat__directory-title {
+    padding: 13px 14px 8px;
+    color: var(--text-muted);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
 
 .chat__item {
     display: flex;
@@ -782,6 +808,16 @@
 }
 
 .chat__item:hover, .chat__item.is-active { background: var(--bg-hover); }
+.chat__item--contact {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid var(--line-soft);
+    background: transparent;
+    color: inherit;
+    text-align: left;
+}
+.chat__contact-action { color: var(--primary-2); font-size: 20px; }
+.chat__empty--compact { min-height: 160px; font-size: var(--fs-sm); }
 
 .chat__item-info { flex: 1; min-width: 0; }
 .chat__item-name { font-weight: 600; }
@@ -1206,19 +1242,15 @@
     overflow: hidden;
     border: 1px solid rgba(92, 102, 214, 0.32);
     border-radius: 15px;
-    background:
-        radial-gradient(circle at 82% 35%, rgba(58, 43, 229, 0.38), transparent 23%),
-        radial-gradient(circle at 53% 105%, rgba(20, 79, 197, 0.42), transparent 34%),
-        linear-gradient(120deg, #101129, #10133a 60%, #0a1231);
+    background:#081329 url('/assets/faematch-connections-hero.png') right center/auto 100% no-repeat;
+    box-shadow:inset 0 1px rgba(255,255,255,.04),0 18px 45px rgba(0,0,0,.18);
 }
 .match-hero::before {
     content: '';
     position: absolute;
     inset: 0;
-    opacity: 0.36;
-    background-image: radial-gradient(rgba(116, 150, 255, 0.7) 0.8px, transparent 0.8px);
-    background-size: 23px 23px;
-    mask-image: linear-gradient(90deg, transparent 20%, #000 70%);
+    z-index:1;
+    background:linear-gradient(90deg,#0b102a 0%,rgba(11,16,42,.98) 38%,rgba(9,16,42,.78) 53%,rgba(7,13,35,.08) 78%);
 }
 .match-hero__glow {
     position: absolute;
@@ -1231,7 +1263,7 @@
     filter: blur(74px);
     opacity: 0.34;
 }
-.match-hero__copy { position: relative; z-index: 2; width: min(54%, 500px); }
+.match-hero__copy { position: relative; z-index: 2; width: min(52%, 520px); }
 .match-kicker,
 .faehub-kicker {
     display: block;

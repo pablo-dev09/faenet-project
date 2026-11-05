@@ -13,6 +13,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request
 from flask_login import current_user
+from sqlalchemy import inspect, text
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from .config import get_config
@@ -27,6 +28,7 @@ def _ensure_upload_dirs(app: Flask) -> None:
 
 def _register_blueprints(app: Flask) -> None:
     from .routes.auth import auth_bp
+    from .routes.avatars import avatars_bp
     from .routes.hub import hub_bp
     from .routes.me import me_bp
     from .routes.messages import messages_bp
@@ -40,6 +42,7 @@ def _register_blueprints(app: Flask) -> None:
     app.register_blueprint(pages_bp)
     app.register_blueprint(uploads_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(avatars_bp)
     app.register_blueprint(me_bp)
     app.register_blueprint(posts_bp)
     app.register_blueprint(stories_bp)
@@ -124,6 +127,24 @@ def _register_cli(app: Flask) -> None:
         print("Tabelas criadas.")
 
 
+def _ensure_avatar_schema() -> None:
+    """Adiciona campos do prototipo sem exigir Alembic em instalacoes existentes."""
+    inspector = inspect(db.engine)
+    if "user_avatars" not in inspector.get_table_names():
+        return
+    existing = {column["name"] for column in inspector.get_columns("user_avatars")}
+    additions = {
+        "gender": "VARCHAR(16) NOT NULL DEFAULT 'male'",
+        "bottom_style": "VARCHAR(24) NOT NULL DEFAULT 'pants'",
+        "shoe_style": "VARCHAR(24) NOT NULL DEFAULT 'sneakers'",
+        "accessories": "VARCHAR(160) NOT NULL DEFAULT ''",
+    }
+    for name, definition in additions.items():
+        if name not in existing:
+            db.session.execute(text(f"ALTER TABLE user_avatars ADD COLUMN {name} {definition}"))
+    db.session.commit()
+
+
 def create_app() -> Flask:
     """Cria e configura a instancia Flask da FaeNet."""
     app = Flask(
@@ -145,6 +166,13 @@ def create_app() -> Flask:
     _register_error_handlers(app)
     _register_shell_context(app)
     _register_cli(app)
+
+    # O projeto ainda nao usa um sistema de migrations. ``create_all`` e
+    # idempotente e garante que novas tabelas de recursos (como o avatar 3D)
+    # existam tanto no SQLite local quanto no PostgreSQL de producao.
+    with app.app_context():
+        db.create_all()
+        _ensure_avatar_schema()
 
     return app
 

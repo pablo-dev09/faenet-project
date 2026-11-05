@@ -65,6 +65,10 @@
         me: () => API.get('/me'),
         updateMe: (data) => API.put('/me', data),
         heartbeat: () => API.post('/me/online'),
+        myAvatar: () => API.get('/avatars/me'),
+        avatar: (username) => API.get(`/avatars/${encodeURIComponent(username)}`),
+        saveAvatar: (config) => API.put('/avatars/me', { config }),
+        onlineAvatars: (limit = 30) => API.get(`/avatars/online?limit=${limit}`),
         uploadMedia: async (formData) => {
             // Espera FormData: file | data_url + category
             return API.post('/me/uploads', formData);

@@ -13,9 +13,11 @@ from datetime import datetime, timedelta
 from .extensions import db
 from .models import (
     HubItem,
+    Message,
     Notification,
     Post,
     User,
+    UserAvatar,
     followers,
     post_likes,
 )
@@ -72,6 +74,48 @@ DEMO_USERS = [
     },
 ]
 
+DEMO_AVATARS = {
+    "pablo": {
+        "skin": "medium",
+        "gender": "male",
+        "hair_style": "curly",
+        "hair_color": "dark",
+        "top_style": "shirt",
+        "top_color": "#347fc4",
+        "bottom_style": "pants",
+        "bottom_color": "#20242b",
+        "shoe_style": "sneakers",
+        "shoe_color": "#eceef2",
+        "accessories": ["glasses", "watch"],
+    },
+    "marlon": {
+        "skin": "brown",
+        "gender": "male",
+        "hair_style": "fade",
+        "hair_color": "dark",
+        "top_style": "hoodie",
+        "top_color": "#171b24",
+        "bottom_style": "pants",
+        "bottom_color": "#171b24",
+        "shoe_style": "sneakers",
+        "shoe_color": "#252832",
+        "accessories": ["glasses"],
+    },
+    "aline": {
+        "skin": "light",
+        "gender": "female",
+        "hair_style": "long",
+        "hair_color": "dark",
+        "top_style": "shirt",
+        "top_color": "#b94161",
+        "bottom_style": "pants",
+        "bottom_color": "#20242b",
+        "shoe_style": "sneakers",
+        "shoe_color": "#252832",
+        "accessories": ["glasses", "earring"],
+    },
+}
+
 
 def _create_user(data: dict) -> User:
     user = User.query.get(data["username"])
@@ -92,6 +136,21 @@ def _create_user(data: dict) -> User:
         user.turma = data.get("turma")
         user.bio = data.get("bio")
     return user
+
+
+def _set_demo_avatar(username: str, config: dict) -> UserAvatar:
+    """Aplica o visual inicial de uma conta de demonstracao."""
+    avatar = db.session.get(UserAvatar, username)
+    if avatar is None:
+        avatar = UserAvatar(username=username)
+        db.session.add(avatar)
+    for field, value in config.items():
+        if field != "accessories":
+            setattr(avatar, field, value)
+    selected = config.get("accessories", [])
+    avatar.accessories = ",".join(selected)
+    avatar.accessory = selected[0] if selected else "none"
+    return avatar
 
 
 def _follow(a: str, b: str) -> None:
@@ -136,6 +195,32 @@ def seed_demo_data() -> None:
     # Usuarios
     users = {u["username"]: _create_user(u) for u in DEMO_USERS}
     db.session.flush()
+    for username, config in DEMO_AVATARS.items():
+        _set_demo_avatar(username, config)
+
+    # Conversas iniciais deixam a area de mensagens utilizavel logo no primeiro acesso.
+    if not Message.query.first():
+        db.session.add_all([
+            Message(
+                from_user="marlon",
+                to_user="pablo",
+                text="Pablo, terminei a revisão da API. Depois me chama para testarmos juntos.",
+                timestamp=datetime.utcnow() - timedelta(minutes=42),
+            ),
+            Message(
+                from_user="pablo",
+                to_user="marlon",
+                text="Boa! Vou abrir o projeto e te mando os resultados por aqui.",
+                read=True,
+                timestamp=datetime.utcnow() - timedelta(minutes=35),
+            ),
+            Message(
+                from_user="aline",
+                to_user="pablo",
+                text="Quando puder, envie uma atualização do andamento da FaeNet.",
+                timestamp=datetime.utcnow() - timedelta(minutes=18),
+            ),
+        ])
 
     # Seguidores: rede coerente
     _follow("marlon", "pablo")

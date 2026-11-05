@@ -82,6 +82,12 @@ class User(UserMixin, db.Model):
         cascade="all, delete-orphan",
         foreign_keys="HubItem.username",
     )
+    avatar_3d = relationship(
+        "UserAvatar",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
 
     # Tabelas de associacao
     likes = relationship(
