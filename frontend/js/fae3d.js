@@ -326,4 +326,3 @@ function makeRenderer(canvas,options={}){
 }
 
 window.Fae3D={THREE,PALETTE,DEFAULT_AVATAR,createAvatar,avatarSvg:buildAvatarSvg,makeRenderer,disposeTree};
-window.dispatchEvent(new Event('fae3d-ready'));

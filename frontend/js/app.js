@@ -159,6 +159,7 @@
             // Assim links como /messages?to=marlon abrem a tela correta e o módulo
             // de mensagens consegue ler o destinatário em window.location.search.
             path = new URL(path, window.location.origin).pathname;
+            this.pendingAvatarView = null;
             if (typeof this.activeViewCleanup === 'function') {
                 try { this.activeViewCleanup(); } catch (_) { /* view ja desmontada */ }
                 this.activeViewCleanup = null;
@@ -191,10 +192,8 @@
                 await FaeMatch.render(main);
             } else if (path === '/hub') {
                 await FaeHub.render(main);
-            } else if (path === '/faemap') {
-                this.activeViewCleanup = await FaeMap.render(main);
-            } else if (path === '/avatar') {
-                this.activeViewCleanup = await FaeAvatar.render(main);
+            } else if (path === '/faemap' || path === '/avatar') {
+                await this.renderAvatarView(main, path);
             } else if (path === '/messages') {
                 await FaeMessages.render(main);
             } else if (path === '/notifications') {
@@ -213,6 +212,30 @@
                 return;
             } else {
                 main.appendChild(FaeUtils.el('div', { class: 'empty' }, 'Pagina nao encontrada.'));
+            }
+        },
+
+        async renderAvatarView(container, path) {
+            const pending = Symbol();
+            this.pendingAvatarView = pending;
+            const isCurrent = () => this.pendingAvatarView === pending && container.isConnected;
+            const name = path === '/faemap' ? 'o FaeMap' : 'o editor de avatar';
+            const status = FaeUtils.el('div', { class: 'empty', role: 'status' }, `Carregando ${name}…`);
+            container.appendChild(status);
+            try {
+                if (!window.Fae3D) await import('/js/fae3d.js');
+                if (!isCurrent()) return;
+                const view = path === '/faemap' ? FaeMap : FaeAvatar;
+                const cleanup = await view.render(container, isCurrent);
+                if (isCurrent()) this.activeViewCleanup = cleanup;
+                else if (typeof cleanup === 'function') cleanup();
+            } catch (_) {
+                if (!isCurrent()) return;
+                FaeUtils.clear(container);
+                container.appendChild(FaeUtils.el('div', { class: 'empty', role: 'alert' },
+                    `Não foi possível abrir ${name}. Confira sua conexão e abra a tela novamente.`));
+            } finally {
+                status.remove();
             }
         },
 

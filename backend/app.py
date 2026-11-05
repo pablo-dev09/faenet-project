@@ -179,17 +179,11 @@ def create_app() -> Flask:
         db.session.execute(text("select 1"))
         return jsonify({"ok": True, "service": "faenet"})
 
-    # O projeto ainda nao usa um sistema de migrations. ``create_all`` e
-    # idempotente e garante que novas tabelas de recursos (como o avatar 3D)
-    # existam tanto no SQLite local quanto no PostgreSQL de producao.
-    # Uma falha aqui nao pode derrubar o boot: quem reporta a saude do banco
-    # para o Render e o endpoint /healthz acima.
-    with app.app_context():
-        try:
+    # O PostgreSQL recebe o esquema pelas migrations do Supabase.
+    if app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite:"):
+        with app.app_context():
             db.create_all()
             _ensure_avatar_schema()
-        except SQLAlchemyError:
-            app.logger.exception("Nao foi possivel preparar o schema do banco")
 
     return app
 

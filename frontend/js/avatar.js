@@ -22,11 +22,11 @@
 
     const AvatarStudio = {
         cleanup: null,
-        async render(container) {
-            if (!global.Fae3D) await global.fae3dReady;
+        async render(container, isCurrent) {
             let config;
             try { config = normalizeConfig((await FaeAPI.myAvatar()).config); }
             catch (_) { config = normalizeConfig(Fae3D.DEFAULT_AVATAR); }
+            if (!isCurrent()) return;
 
             const root = FaeUtils.el('section', { class: 'avatar-studio' });
             root.innerHTML = `

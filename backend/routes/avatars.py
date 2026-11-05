@@ -4,6 +4,7 @@ import re
 
 from flask import Blueprint, request
 from flask_login import current_user, login_required
+from sqlalchemy.orm import selectinload
 
 from ..extensions import db
 from ..models import User, UserAvatar
@@ -61,7 +62,9 @@ def my_avatar():
 @avatars_bp.put("/me")
 @login_required
 def save_my_avatar():
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return fail("Informe a configuração do avatar.", 400, "invalid_avatar_config")
     config = data.get("config") if isinstance(data.get("config"), dict) else data
     clean = {}
     for field, allowed in OPTIONS.items():
@@ -114,7 +117,8 @@ def online_avatars():
         limit = min(max(int(request.args.get("limit", 24)), 1), 60)
     except ValueError:
         limit = 24
-    users = User.query.filter_by(online=True).order_by(User.last_seen.desc()).limit(limit).all()
+    users = (User.query.options(selectinload(User.avatar_3d)).filter_by(online=True)
+             .order_by(User.last_seen.desc()).limit(limit).all())
     if current_user not in users:
         users.insert(0, current_user)
     return ok([

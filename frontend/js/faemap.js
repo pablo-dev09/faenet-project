@@ -9,9 +9,7 @@
     ];
 
     const FaeMap = {
-        async render(container) {
-            if (!global.Fae3D) await global.fae3dReady;
-
+        async render(container, isCurrent) {
             const me = FaeAuth.currentUser || { username: 'aluno', name: 'Aluno' };
             let people;
             try {
@@ -19,6 +17,7 @@
             } catch (_) {
                 people = [{ user: me, config: { ...Fae3D.DEFAULT_AVATAR } }];
             }
+            if (!isCurrent()) return;
 
             if (!people.some(entry => entry.user.username === me.username)) {
                 people.unshift({ user: me, config: { ...Fae3D.DEFAULT_AVATAR } });
